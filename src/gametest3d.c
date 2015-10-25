@@ -34,7 +34,8 @@ extern float worldHeight;
 extern float worldWidth;
 extern float worldBack;
 extern float worldFront;
-extern Entity *player;
+extern Entity *player1;
+extern int buttonDown;
 int cTime = 0;      //I did say this was a random generation-type game
                     //so, instead of using my former technique of having 
 
@@ -70,55 +71,8 @@ int main(int argc, char *argv[])
 	while (bGameLoopRunning)
     {
         entity_think_all();
-        while ( SDL_PollEvent(&e) ) 
-        {
-            if (e.type == SDL_QUIT)
-            {
-                bGameLoopRunning = 0;
-            }
-            else if (e.type == SDL_KEYDOWN)
-            {
-                if (e.key.keysym.sym == SDLK_ESCAPE)
-                {
-                    bGameLoopRunning = 0;
-                }
-                else if (e.key.keysym.sym == SDLK_SPACE)
-                {
-                    
-                }
-                else if (e.key.keysym.sym == SDLK_z)
-                {
-                  
-                }
-				else if (e.key.keysym.sym == SDLK_x){
-				
-				}
-                else if (e.key.keysym.sym == SDLK_w)
-                {
-					if(!(player->body.position.z > worldHeight)){
-						player->body.position.z += 0.2;
-					}
-                }
-                else if (e.key.keysym.sym == SDLK_s)
-                {
-					if(!(player->body.position.z < -worldHeight)){
-						player->body.position.z -= 0.2;
-					}
-                }
-                else if (e.key.keysym.sym == SDLK_d)
-                {
-					if(!(player->body.position.x > worldWidth)){
-						player->body.position.x += 0.2;
-					}
-                }
-                else if (e.key.keysym.sym == SDLK_a)
-                {
-					if(!(player->body.position.x < -worldWidth)){
-						player->body.position.x -= 0.2;
-					}
-				}
-            }
-        }
+        
+        bGameLoopRunning = mainInput();
 
         graphics3d_frame_begin();
         

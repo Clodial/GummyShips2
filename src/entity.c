@@ -11,6 +11,7 @@
 #include "collisions.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "SDL.h"
 
 static Entity *__entity_list = NULL;
 static int __entity_max = 0;
@@ -23,7 +24,8 @@ float worldWidth = 2;
 float worldBack = 10;
 float worldFront = 50;
 int cSpeed = 0;
-Entity *player;
+int buttonDown = 0;
+Entity *player1;
 
 void mainInit(){
 	Obj *playModel;
@@ -32,7 +34,66 @@ void mainInit(){
 	playModel = obj_load("models/cube.obj");
 	playSprite = LoadSprite("models/cube_text.png",50,50);
 
-	player = newPlayer(vec3d(0,0,0), "player", playModel, playSprite, 3);
+	player1 = newPlayer(vec3d(0,0,0), "player", playModel, playSprite, 3);
+}
+
+int mainInput(){
+	SDL_Event eve;
+	int keyn;
+	Uint8 *keys;
+
+	while(SDL_PollEvent(&eve)){
+		switch(eve.type){
+			case SDL_QUIT:
+				return 0;
+				break;
+			case SDL_KEYDOWN:
+				switch(eve.key.keysym.sym){
+					case SDLK_ESCAPE:
+						return 0;
+						break;
+					case SDLK_z:
+						break;
+					case SDLK_x:
+						break;
+					case SDLK_w:
+						player1->vVert = 0.05;
+						break;
+					case SDLK_s:
+						player1->vVert = -0.05;
+						break;
+					case SDLK_a:
+						player1->vHorz = -0.05;
+						break;
+					case SDLK_d:
+						player1->vHorz = 0.05;
+						break;
+					default:
+						break;
+				}
+				break;
+			case SDL_KEYUP:
+				switch(eve.key.keysym.sym){
+					case SDLK_w:
+						player1->vVert = 0;
+						break;
+					case SDLK_s:
+						player1->vVert = 0;
+						break;
+					case SDLK_a:
+						player1->vHorz = 0;
+						break;
+					case SDLK_d:
+						player1->vHorz = 0;
+						break;
+					default:
+						break;
+				}
+				break;
+		}
+	}
+	return 1;
+	
 }
 
 void entity_init(int maxEntity)
@@ -156,6 +217,8 @@ Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *sprite, 
 	player->scale = vec3d(0.2,0.2,0.2);
     player->type = T_PLAYER;
     player->hp = aHp;
+	player->vVert = 0;
+	player->vHorz = 0;
     player->think = playerThink;
     mgl_callback_set(&player->body.touch, touch_callback_player, player);
     return player;
@@ -227,15 +290,24 @@ Entity *newship(Vec3D position, const char *name, Obj *model, Sprite *sprite){
 
 void playerThink(Entity *self){
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
+
+	if((self->vHorz < 0 && self->body.position.x > -worldWidth) || (self->vHorz > 0 && self->body.position.x < worldWidth))
+	{
+		self->body.position.x += self->vHorz;
+	}
+	if((self->vVert < 0 && self->body.position.z > -worldHeight) || (self->vVert > 0 && self->body.position.z < worldHeight))
+	{
+		self->body.position.z += self->vVert;
+	}
 }
 void powerThink(Entity *self){
-    
+	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
 }
 
 void wallThink(Entity *self){
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
     self->body.position.y += -0.1;
-	if(cube_cube_intersection(self->body.bounds, player->body.bounds)){
+	if(cube_cube_intersection(self->body.bounds, player1->body.bounds)){
 		slog("Collision Detected");
 		entity_free(self);
 	}

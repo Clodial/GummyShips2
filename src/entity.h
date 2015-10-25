@@ -34,6 +34,9 @@ typedef struct Entity_S
     int wall;
     int hp;
 
+	float vVert;
+	float vHorz;
+
     Obj *objModel;
     Obj *objAnimation[24];
     int state;
@@ -47,6 +50,12 @@ typedef struct Entity_S
 * @brief initializes what has to be loaded at the start of the game
 */
 void mainInit();
+
+/**
+* @brief control input for the game
+* @return the status of the game loop, if it has ended or not
+*/
+int mainInput();
 
 /**
  * @brief initialize the entity sub system
