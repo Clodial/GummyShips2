@@ -95,19 +95,27 @@ int main(int argc, char *argv[])
 				}
                 else if (e.key.keysym.sym == SDLK_w)
                 {
-                    player->body.position.z += 0.2;
+					if(!(player->body.position.z > worldHeight)){
+						player->body.position.z += 0.2;
+					}
                 }
                 else if (e.key.keysym.sym == SDLK_s)
                 {
-                    player->body.position.z -= 0.2;
+					if(!(player->body.position.z < -worldHeight)){
+						player->body.position.z -= 0.2;
+					}
                 }
                 else if (e.key.keysym.sym == SDLK_d)
                 {
-                    player->body.position.x += 0.2;
+					if(!(player->body.position.x > worldWidth)){
+						player->body.position.x += 0.2;
+					}
                 }
                 else if (e.key.keysym.sym == SDLK_a)
                 {
-                   player->body.position.x -= 0.2;
+					if(!(player->body.position.x < -worldWidth)){
+						player->body.position.x -= 0.2;
+					}
 				}
             }
         }

@@ -18,8 +18,8 @@ static int __entity_initialized = 0;
 
 static void entity_deinitialize();
 
-float worldHeight = 30;
-float worldWidth = 30;
+float worldHeight = 2;
+float worldWidth = 2;
 float worldBack = 10;
 float worldFront = 50;
 int cSpeed = 0;
