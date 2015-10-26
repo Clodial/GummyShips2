@@ -39,7 +39,8 @@ extern Entity *player1;
 extern int buttonDown;
 int cTime = 0;      //I did say this was a random generation-type game
                     //so, instead of using my former technique of having 
-Vec3D cameraPosition = {0, -15, 0};
+int cUse = 1000;
+Vec3D cameraPosition = {0, -12, 0};
 Vec3D cameraRotation = {90,0,0};
 
 int main(int argc, char *argv[])
@@ -61,6 +62,7 @@ int main(int argc, char *argv[])
     model_init();
     obj_init();
     entity_init(255);
+	shield_init(3);
 
 	enObj = obj_load("models/cube.obj");
     enText = LoadSprite("models/mountain_text.png",1024,1024);
@@ -70,51 +72,103 @@ int main(int argc, char *argv[])
 	while (bGameLoopRunning)
     {
 		cTime += 1;
-		if(cSpeed < 0.1){
+		if(cSpeed < .1){
 			cSpeed += .001;
 		}
-		switch(cTime % 100){
-			/*case 0:
-				randomNum = rand()%4;
-				switch(randomNum){
-					case W_ZIG:
-						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG);
-						break;
-					case W_STRAIGHT:
-						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT);
-						break;
-					case W_HORZ:
-						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ);
-						break;
-					case W_VERT:
-						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT);
-						break;
-				}
-				break;*/
-			case 50:
-				break;
-			/*case 75:
-				randomNum = rand()%4;
-				switch(randomNum){
-					case W_ZIG:
-						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG);
-						break;
-					case W_STRAIGHT:
-						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT);
-						break;
-					case W_HORZ:
-						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ);
-						break;
-					case W_VERT:
-						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT);
-						break;
-				}
-				break;*/
-			default:
-				break;
+		if(cUse < 1000){
+			cUse += 5;
+		}
+		if(cSpeed < 1){
+			switch(cTime % 200){
+				case 50:
+					randomNum = rand()%4;
+					switch(randomNum){
+						case W_ZIG:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG, rand()%4);
+							break;
+						case W_STRAIGHT:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT, 0);
+							break;
+						case W_HORZ:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ, rand()%2);
+							break;
+						case W_VERT:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT, rand()%2);
+							break;
+					}
+					break;
+				case 100:
+					testEn = newship(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "ship", obj_load("models/cube.obj"), LoadSprite("models/cube_text.png",50,50));
+					break;
+				case 150:
+					randomNum = rand()%4;
+					switch(randomNum){
+						case W_ZIG:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG, rand()%4);
+							break;
+						case W_STRAIGHT:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT, 0);
+							break;
+						case W_HORZ:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ, rand()%2);
+							break;
+						case W_VERT:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT, rand()%2);
+							break;
+					}
+					break;
+				case 175:
+					//making powerups only accessible in some cases
+					break;
+				default:
+					break;
+			}
+		}else{
+			switch(cTime % 60){
+				case 15:
+					randomNum = rand()%4;
+					switch(randomNum){
+						case W_ZIG:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG, rand()%4);
+							break;
+						case W_STRAIGHT:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT, 0);
+							break;
+						case W_HORZ:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ, rand()%2);
+							break;
+						case W_VERT:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT, rand()%2);
+							break;
+					}
+					break;
+				case 30:
+					testEn = newship(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "ship", obj_load("models/cube.obj"), LoadSprite("models/cube_text.png",50,50));
+					break;
+				case 45:
+					randomNum = rand()%4;
+					switch(randomNum){
+						case W_ZIG:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG, rand()%4);
+							break;
+						case W_STRAIGHT:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT, 0);
+							break;
+						case W_HORZ:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ, rand()%2);
+							break;
+						case W_VERT:
+							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT, rand()%2);
+							break;
+					}
+					break;
+				default:
+					break;
+			}
 		}
         entity_think_all();
-        
+        shield_think_all();
+
         bGameLoopRunning = mainInput();
 
         graphics3d_frame_begin();
@@ -125,6 +179,7 @@ int main(int argc, char *argv[])
             cameraRotation);
         
         entity_draw_all();
+		shield_draw_all();
         //glTranslatef(-5,0,0);
         glPushMatrix();
 		glPopMatrix();
