@@ -18,7 +18,6 @@
  *    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *    SOFTWARE.
  */
-#include "mgl_callback.h"
 #include "simple_logger.h"
 #include "graphics3d.h"
 #include "shader.h"
@@ -26,10 +25,12 @@
 #include "vector.h"
 #include "sprite.h"
 #include "entity.h"
+#include <math.h>
+#include <stdlib.h>
 
 void set_camera(Vec3D position, Vec3D rotation);
 
-extern int cSpeed;
+extern float cSpeed;
 extern float worldHeight;
 extern float worldWidth;
 extern float worldBack;
@@ -38,19 +39,19 @@ extern Entity *player1;
 extern int buttonDown;
 int cTime = 0;      //I did say this was a random generation-type game
                     //so, instead of using my former technique of having 
-
+Vec3D cameraPosition = {0, -15, 0};
+Vec3D cameraRotation = {90,0,0};
 
 int main(int argc, char *argv[])
 {
     int i;
     float r = 0;
     char bGameLoopRunning = 1;
-    Vec3D cameraPosition = {0,-10,.3};
-    Vec3D cameraRotation = {90,0,0};
     SDL_Event e;
     Entity *testEn;
-	Obj *bgobj;
-	Sprite *bgtext;
+	Obj *enObj;
+	Sprite *enText;
+	int randomNum;
 
     init_logger("gametest3d.log");
     if (graphics3d_init(1024,768,1,"gametest3d",33) != 0)
@@ -61,15 +62,57 @@ int main(int argc, char *argv[])
     obj_init();
     entity_init(255);
 
-	bgobj = obj_load("models/cube.obj");
-    bgtext = LoadSprite("models/mountain_text.png",1024,1024);
-
-	testEn = newWall(vec3d(0,20,0), "wall", bgobj, bgtext, W_STRAIGHT);
+	enObj = obj_load("models/cube.obj");
+    enText = LoadSprite("models/mountain_text.png",1024,1024);
 
 	mainInit();
     
 	while (bGameLoopRunning)
     {
+		cTime += 1;
+		if(cSpeed < 0.1){
+			cSpeed += .001;
+		}
+		switch(cTime % 100){
+			/*case 0:
+				randomNum = rand()%4;
+				switch(randomNum){
+					case W_ZIG:
+						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG);
+						break;
+					case W_STRAIGHT:
+						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT);
+						break;
+					case W_HORZ:
+						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ);
+						break;
+					case W_VERT:
+						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT);
+						break;
+				}
+				break;*/
+			case 50:
+				break;
+			/*case 75:
+				randomNum = rand()%4;
+				switch(randomNum){
+					case W_ZIG:
+						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG);
+						break;
+					case W_STRAIGHT:
+						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT);
+						break;
+					case W_HORZ:
+						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ);
+						break;
+					case W_VERT:
+						testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,50,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT);
+						break;
+				}
+				break;*/
+			default:
+				break;
+		}
         entity_think_all();
         
         bGameLoopRunning = mainInput();

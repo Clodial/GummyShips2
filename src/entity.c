@@ -1,4 +1,5 @@
 #include "entity.h"
+#include "gametest3d.h"
 #include "simple_logger.h"
 #include "mgl_callback.h"
 #include "simple_logger.h"
@@ -19,25 +20,34 @@ static int __entity_initialized = 0;
 
 static void entity_deinitialize();
 
+extern Vec3D cameraPosition;
+extern Vec3D cameraRotation;
+
 float worldHeight = 2;
 float worldWidth = 2;
 float worldBack = 10;
 float worldFront = 50;
-int cSpeed = 0;
-int buttonDown = 0;
+float cSpeed = 0.01;
+int shields = 0;
 Entity *player1;
+Sprite *shieldText;
+Obj *shieldObj;
+Entity *shieldCont[3];
 
 void mainInit(){
 	Obj *playModel;
 	Sprite *playSprite;
 
+	shieldText = LoadSprite("models/cube_text.png",50,50);
+	shieldObj = obj_load("models/cube.obj");
 	playModel = obj_load("models/cube.obj");
 	playSprite = LoadSprite("models/cube_text.png",50,50);
 
-	player1 = newPlayer(vec3d(0,0,0), "player", playModel, playSprite, 3);
+	player1 = newPlayer(vec3d(0,-5,0), "player", playModel, playSprite, 3);
 }
 
 int mainInput(){
+	Entity *shieldHero;
 	SDL_Event eve;
 	int keyn;
 	Uint8 *keys;
@@ -53,8 +63,16 @@ int mainInput(){
 						return 0;
 						break;
 					case SDLK_z:
+						if(shields < 3){
+							shieldHero = newShield(vec3d(player1->body.position.x, player1->body.position.y + 1, player1->body.position.z), "shield", shieldObj, shieldText, T_SHIELDW); 
+							shields++;
+						}
 						break;
 					case SDLK_x:
+						if(shields < 3){
+							shieldHero = newShield(vec3d(player1->body.position.x, player1->body.position.y, player1->body.position.z), "shield", shieldObj, shieldText, T_SHIELDB); 
+							shields++;
+						}
 						break;
 					case SDLK_w:
 						player1->vVert = 0.05;
@@ -220,9 +238,10 @@ Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *sprite, 
 	player->vVert = 0;
 	player->vHorz = 0;
     player->think = playerThink;
-    mgl_callback_set(&player->body.touch, touch_callback_player, player);
+    
     return player;
 }
+
 Entity *newPower(Vec3D position, const char *name, Obj *model, Sprite *sprite, int type){
     Entity *power;
     power = entity_new();
@@ -236,7 +255,7 @@ Entity *newPower(Vec3D position, const char *name, Obj *model, Sprite *sprite, i
     power->type = T_POWER;
     power->power = type;
     power->think = powerThink;
-    mgl_callback_set(&power->body.touch, touch_callback_dest, power);
+    
     return power;
 }
 
@@ -254,9 +273,10 @@ Entity *newWall(Vec3D position, const char *name, Obj *model, Sprite *sprite, in
     wall->type = T_WALL;
     wall->wall = type;
     wall->think = wallThink;
-    mgl_callback_set(&wall->body.touch, touch_callback_dest, wall);
+    
     return wall;
 }
+
 Entity *newBullet(Vec3D position, const char *name, Obj *model, Sprite *sprite){
     Entity *bull;
     bull = entity_new();
@@ -269,9 +289,10 @@ Entity *newBullet(Vec3D position, const char *name, Obj *model, Sprite *sprite){
     cube_set(bull->body.bounds, position.x, position.y, position.z, 0.2, 0.2, 0.2);
     bull->type = T_BULLET;
     bull->think = bulletThink;
-    mgl_callback_set(&bull->body.touch, touch_callback_dest, bull);
+    
     return bull;
 }
+
 Entity *newship(Vec3D position, const char *name, Obj *model, Sprite *sprite){
     Entity *ship;
     ship = entity_new();
@@ -284,8 +305,26 @@ Entity *newship(Vec3D position, const char *name, Obj *model, Sprite *sprite){
     cube_set(ship->body.bounds, position.x, position.y, position.z, 0.2, 0.2, 0.2);
     ship->type = T_SHIP;
     ship->think = shipThink;
-    mgl_callback_set(&ship->body.touch, touch_callback_dest, ship);
+
     return ship;
+}
+
+Entity *newShield(Vec3D position, const char *name, Obj *model, Sprite *sprite, int type){
+	Entity *shield;
+	shield = entity_new();
+	if(shield == NULL)return;
+	vec3d_cpy(shield->body.position, position);
+	shield->rotation = vec3d(90,90,90);
+	shield->scale = vec3d(0.3,0.05,0.4);
+	shield->objModel = model;
+	shield->texture = sprite;
+	cube_set(shield->body.bounds, position.x, position.y, position.z, 0.3, 0.05, 0.4);
+    shield->type = type;
+	shield->color.w = .4;
+	shield->time = 30;
+	shield->think = shieldThink;
+
+	return shield;
 }
 
 void playerThink(Entity *self){
@@ -300,74 +339,55 @@ void playerThink(Entity *self){
 		self->body.position.z += self->vVert;
 	}
 }
+
 void powerThink(Entity *self){
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
 }
 
 void wallThink(Entity *self){
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
-    self->body.position.y += -0.1;
+    switch(self->wall){
+		case W_ZIG:
+			break;
+		case W_HORZ:
+			break;
+		case W_VERT:
+			
+			break;
+		default:
+			break;
+	}
+	self->body.position.y -= cSpeed;
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds)){
+		cSpeed = 0.01;
 		slog("Collision Detected");
+		if(player1->hp > 0){
+			player1->hp--;
+			slog("self->hp");
+		}
+	}
+	if(self->body.position.y < -worldBack){
 		entity_free(self);
 	}
 }
+
 void bulletThink(Entity *self){
     
 }
+
 void shipThink(Entity *self){
   
 }
 
-void touch_callback_dest(void *data, void *context){
-    Entity *self, *other;
-    Body *obody;
-    if((!data)||(!context))return;
-    self = (Entity *)data;
-    obody = (Body *)context;
-    if(entity_is_entity(obody->touch.data)){
-        other = (Entity *)obody->touch.data;
-        if(other->type == T_PLAYER || other->type == T_POWER){
-            entity_free(self);
-        }
-    }
-}
+void shieldThink(Entity *self){
 
-void touch_callback_player(void *data, void *context){
-    Entity *self, *other;
-    Body *obody;
-    if((!data)||(!context))return;
-    self = (Entity *)data;
-    obody = (Body *)context;
-    if(entity_is_entity(obody->touch.data)){
-        other = (Entity *)obody->touch.data;
-        switch (other->type){
-            case T_BULLET:
-                if(cSpeed > 0){
-                    cSpeed--;
-                }
-                break;
-            case T_POWER:
-                switch (other->power){
-                    case P_SHIELD:
-                        self->power = P_SHIELD;
-                        break;
-                    case P_BOMB:
-                        self->power = P_BOMB;
-                        break;
-                    case P_BLAST:
-                        self->power = P_BLAST;
-                        break;
-                }
-                break;
-            default:
-                if(self->hp > 0){
-					self->hp--;
-					slog("self->hp");
-				}
-                break;
-        }
-    }
+	if(self->time > 0){
+		self->time -= 1;
+	}else{
+		shields--;
+		entity_free(self);		
+	}
+
 }
 
 

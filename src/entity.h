@@ -8,7 +8,7 @@
 #include "body.h"
 
 enum Type{
-	T_PLAYER, T_SHIP, T_WALL, T_BULLET, T_POWER
+	T_PLAYER, T_SHIP, T_WALL, T_BULLET, T_POWER, T_SHIELDW, T_SHIELDB
 };
 
 enum WType{
@@ -36,6 +36,8 @@ typedef struct Entity_S
 
 	float vVert;
 	float vHorz;
+
+	int time;
 
     Obj *objModel;
     Obj *objAnimation[24];
@@ -95,6 +97,8 @@ Entity *newWall(Vec3D position, const char *name, Obj *model, Sprite *texture, i
 Entity *newBullet(Vec3D position, const char *name, Obj *model, Sprite *texture);
 Entity *newShip(Vec3D position, const char *name, Obj *model, Sprite *texture);
 
+Entity *newShield(Vec3D position, const char *name, Obj *model, Sprite *texture, int type);
+
 void playerThink(Entity *self);
 void powerThink(Entity *self);
 
@@ -102,7 +106,6 @@ void wallThink(Entity *self);
 void bulletThink(Entity *self);
 void shipThink(Entity *self);
 
-void touch_callback_player(void *data, void *context);
-void touch_callback_dest(void *data, void *context);
+void shieldThink(Entity *self);
 
 #endif
