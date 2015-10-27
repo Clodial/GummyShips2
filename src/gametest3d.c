@@ -39,6 +39,7 @@ extern Entity *player1;
 extern int buttonDown;
 extern int cBarrelRoll;
 extern int cBarrelUse;
+extern int powerLength;
 int cTime = 0;      //I did say this was a random generation-type game
                     //so, instead of using my former technique of having 
 int cUse = 1000;
@@ -82,6 +83,11 @@ int main(int argc, char *argv[])
 		if(cBarrelRoll < 200 && cBarrelUse == 0){
 			cBarrelRoll += 1;
 		}
+		if(powerLength > 0){
+			powerLength -= 1;
+		}else{
+			player1->power = P_NONE;
+		}
 		if(cSpeed < 1){
 			switch(cTime % 200){
 				case 50:
@@ -122,7 +128,17 @@ int main(int argc, char *argv[])
 					}
 					break;
 				case 175:
-					//making powerups only accessible in some cases
+					switch(rand()%3){
+						case 1:
+							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_MINI);
+							break;
+						case 2:
+							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_BOMB);
+							break;
+						default:
+							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_INVERT);
+							break;
+					}
 					break;
 				default:
 					break;
@@ -166,6 +182,18 @@ int main(int argc, char *argv[])
 							break;
 					}
 					break;
+				case 59:
+					switch(rand()%3){
+						case 1:
+							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_MINI);
+							break;
+						case 2:
+							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_BOMB);
+							break;
+						default:
+							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_INVERT);
+							break;
+					}
 				default:
 					break;
 			}

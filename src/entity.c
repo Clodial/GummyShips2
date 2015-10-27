@@ -18,11 +18,6 @@ static Entity *__entity_list = NULL;
 static int __entity_max = 0;
 static int __entity_initialized = 0;
 
-static Entity *__shield_list = NULL;
-static int __shield_max = 0;
-static int __shield_init = 0;
-
-
 static void entity_deinitialize();
 static void shield_deinit();
 
@@ -38,6 +33,7 @@ float worldBack = 10;
 float worldFront = 50;
 float cSpeed = 0.01;
 int shields = 0;
+int powerLength = 0;
 Entity *player1;
 Sprite *shieldText;
 Obj *shieldObj;
@@ -71,16 +67,33 @@ int mainInput(){
 						return 0;
 						break;
 					case SDLK_w:
-						player1->vVert = 0.05;
+						if(player1->power == P_INVERT){
+							player1->vVert = -0.05;
+						}
+						else{
+							player1->vVert = 0.05;
+						}
 						break;
 					case SDLK_s:
-						player1->vVert = -0.05;
+						if(player1->power == P_INVERT){
+							player1->vVert = 0.05;
+						}else{
+							player1->vVert = -0.05;
+						}
 						break;
 					case SDLK_a:
-						player1->vHorz = -0.05;
+						if(player1->power == P_INVERT){
+							player1->vHorz = 0.05;
+						}else{
+							player1->vHorz = -0.05;
+						}
 						break;
 					case SDLK_d:
-						player1->vHorz = 0.05;
+						if(player1->power == P_INVERT){
+							player1->vHorz = -0.05;
+						}else{
+							player1->vHorz = 0.05;
+						}
 						break;
 					case SDLK_c:
 						if(cUse > 200){
@@ -251,6 +264,7 @@ Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *sprite, 
     player->hp = aHp;
 	player->vVert = 0;
 	player->vHorz = 0;
+	player->power = P_NONE;
     player->think = playerThink;
     
     return player;
@@ -263,9 +277,9 @@ Entity *newPower(Vec3D position, const char *name, Obj *model, Sprite *sprite, i
     power->objModel = model;
     power->texture = sprite;
     power->rotation = vec3d(90,90,90);
-	power->scale = vec3d(0.2,0.2,0.2);
+	power->scale = vec3d(1,0.2,1);
     vec3d_cpy(power->body.position, position);
-    cube_set(power->body.bounds, position.x, position.y, position.z, 0.2, 0.2, 0.2);
+    cube_set(power->body.bounds, position.x, position.y, position.z, 1, 0.2, 1);
     power->type = T_POWER;
     power->power = type;
     power->think = powerThink;
@@ -344,10 +358,20 @@ void playerThink(Entity *self){
 }
 
 void powerThink(Entity *self){
-	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
-	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
-		
+	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 1, 0.2, 1);
+	if(cube_cube_intersection(self->body.bounds, player1->body.bounds)){
 		player1->power = self->power;
+		switch(self->power){
+			case P_MINI:
+				powerLength = 300;
+				break;
+			case P_BOMB:
+				powerLength = 30;
+				break;
+			case P_INVERT:
+				powerLength = 150;
+				break;
+		}
 		entity_free(self);
 	}
 	if(self->body.position.y < cameraPosition.y-worldBack){
@@ -441,7 +465,17 @@ void wallThink(Entity *self){
 		default:
 			break;
 	}
-	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
+	if(player1->power == P_BOMB){
+		entity_free(self);
+	}
+	if(player1->power == P_MINI){
+		self->scale = vec3d(0.1,0.1,0.1);
+		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.1, 0.1, 0.1);
+	}
+	else{
+		self->scale = vec3d(0.5,0.5,0.5);
+		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.5, 0.5, 0.5);
+	}
 	self->body.position.y -= cSpeed;
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
 		cSpeed = 0.01;
@@ -457,6 +491,12 @@ void wallThink(Entity *self){
 void bulletThink(Entity *self){
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
 	self->body.position.y -= 0.1;
+	if(player1->power == P_BOMB){
+		entity_free(self);
+	}
+	if(player1->power == P_MINI){
+		entity_free(self);
+	}
     if(self->body.position.y < cameraPosition.y-worldBack){
 		entity_free(self);
 	}
@@ -470,8 +510,17 @@ void bulletThink(Entity *self){
 void shipThink(Entity *self){
 	Entity *bullet;
 
-	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
+	if(player1->power == P_MINI){
+		self->scale = vec3d(0.02, 0.02, 0.02);
+		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.02, 0.02, 0.02);
+	}else{
+		self->scale = vec3d(0.2, 0.2, 0.2);
+		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
+	}
 	self->time += 1;
+	if(player1->power == P_BOMB){
+		entity_free(self);
+	}
 	if(self->time >= 300){
 		bullet = newBullet(self->body.position, "bullet", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024));
 		self->time = 0;

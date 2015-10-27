@@ -15,7 +15,7 @@ enum WType{
 	W_ZIG, W_STRAIGHT, W_HORZ, W_VERT
 };
 enum PType{
-	P_SHIELD, P_BOMB, P_BLAST
+	P_MINI, P_BOMB, P_INVERT, P_NONE
 };
 
 typedef struct Entity_S
@@ -40,8 +40,6 @@ typedef struct Entity_S
 	int time;
 
 	int wMove;
-
-	int powerLength;
 
     Obj *objModel;
     Obj *objAnimation[24];
