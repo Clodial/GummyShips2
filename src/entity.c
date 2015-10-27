@@ -30,6 +30,8 @@ extern Vec3D cameraPosition;
 extern Vec3D cameraRotation;
 extern int cUse; 
 
+int cBarrelRoll = 200;
+int cBarrelUse = 0;
 float worldHeight = 2;
 float worldWidth = 2;
 float worldBack = 10;
@@ -83,23 +85,30 @@ int mainInput(){
 					case SDLK_c:
 						if(cUse > 200){
 							cSpeed = 2;
-							cUse -= 20;
 						}else{
 							cSpeed = 0.01;
 						}
+						cUse -= 20;
+						break;
+					case SDLK_z:
+						if(cBarrelUse){
+							if(cBarrelRoll > 0){
+								cBarrelRoll -= 5;
+							}
+							else{
+								cBarrelUse = 0;
+							}
+						}
+						else if(cBarrelRoll >= 200){
+							cBarrelUse = 1;
+						}
+						break;
 					default:
 						break;
 				}
 				break;
 			case SDL_KEYUP:
 				switch(eve.key.keysym.sym){
-					case SDLK_z:
-						slog("button pressed");
-						shieldHero = newShield(vec3d(player1->body.position.x, player1->body.position.y + 1, player1->body.position.z), "shield", shieldObj, shieldText, T_SHIELDW); 
-						break;
-					case SDLK_x:
-						shieldHero = newShield(vec3d(player1->body.position.x, player1->body.position.y, player1->body.position.z), "shield", shieldObj, shieldText, T_SHIELDB); 
-						break;
 					case SDLK_w:
 						player1->vVert = 0;
 						break;
@@ -115,6 +124,10 @@ int mainInput(){
 					case SDLK_c:
 						cSpeed = 0.01;
 						cUse = 0;
+					case SDLK_z:
+						cBarrelRoll = 0;
+						cBarrelUse = 0;
+						break;
 					default:
 						break;
 				}
@@ -224,111 +237,6 @@ void entity_draw(Entity *ent)
     );
 }
 
-
-/*
-* For the shields
-*/
-void shield_init(int maxShields)
-{
-    if (__shield_init)
-    {
-        slog("already initialized shields");
-        return;
-    }
-    __shield_list = (Entity *)malloc(sizeof(Entity)*maxShields);
-    memset(__shield_list,0,sizeof(Entity)*maxShields);
-    __shield_max = maxShields;
-    __shield_init = 1;
-    slog("initialized %i shields",maxShields);
-    atexit(shield_deinit);
-}
-
-static void shield_deinit()
-{
-    int i;
-    for (i = 0;i < __shield_max;i++)
-    {
-        if (__shield_list[i].inuse)
-        {
-            entity_free(&__shield_list[i]);
-        }
-    }
-    free(__shield_list);
-    __shield_max = 0;
-    __shield_init = 0;
-}
-
-Entity *shield_new()
-{
-    int i;
-	
-	slog("Hi");
-	for (i = 0; i < __shield_max;i++)
-    {
-        if (!__shield_list[i].inuse)
-        {
-            memset(&__shield_list[i],0,sizeof(Entity));
-            __shield_list[i].inuse = 1;
-            vec3d_set(__shield_list[i].scale,1,1,1);
-            vec4d_set(__shield_list[i].color,1,1,1,1);
-            slog("Bye");
-			return &__shield_list[i];
-
-        }
-    }
-    return NULL;
-}
-
-void shield_think_all()
-{
-    int i;
-    for (i = 0; i < __shield_max; i++)
-    {
-        if ((__shield_list[i].inuse) &&
-            (__shield_list[i].think != NULL))
-        {
-            __shield_list[i].think(&__shield_list[i]);
-        }
-    }
-}
-
-void shield_draw_all()
-{
-    int i;
-    for (i = 0;i < __shield_max;i++)
-    {
-        if (__shield_list[i].inuse)
-        {
-            shield_draw(&__shield_list[i]);
-        }
-    }
-}
-
-void shield_draw(Entity *ent)
-{
-    if (!ent)
-    {
-        return;
-    }
-    obj_draw(
-        ent->objModel,
-        ent->body.position,
-        ent->rotation,
-        ent->scale,
-        ent->color,
-        ent->texture
-    );
-}
-
-int shield_is_shield(void *data)
-{
-    if (!data)return 0;
-    if (!__shield_init)return 0;
-    if ((Entity *)data < __shield_list)return 0;
-    if ((Entity *)data >= (__shield_list + __shield_max))return 0;
-    return 1;
-}
-
 Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *sprite, int aHp){
     Entity *player;
     player = entity_new();
@@ -368,14 +276,19 @@ Entity *newPower(Vec3D position, const char *name, Obj *model, Sprite *sprite, i
 
 Entity *newWall(Vec3D position, const char *name, Obj *model, Sprite *sprite, int type){
     Entity *wall;
+	float wSize,hSize,dSize;
+	wSize = rand()%10/10;
+	hSize = rand()%10/10;
+	dSize = rand()%10/10;
     wall = entity_new();
     if(wall == NULL) return;
     wall->objModel = model;
     wall->texture = sprite;
     wall->rotation = vec3d(90,90,90);
-	wall->scale = vec3d(0.2,0.2,0.2);
+	//wall->scale = vec3d(wSize,hSize,dSize);
+	wall->scale = vec3d(.5,.5,.5);
     vec3d_cpy(wall->body.position, position);
-    cube_set(wall->body.bounds, position.x, position.y, position.z, 0.2, 0.2, 0.2);
+    cube_set(wall->body.bounds, position.x, position.y, position.z, .5, .5, .5);
     wall->type = T_WALL;
     wall->wall = type;
     wall->think = wallThink;
@@ -416,25 +329,6 @@ Entity *newship(Vec3D position, const char *name, Obj *model, Sprite *sprite){
     return ship;
 }
 
-Entity *newShield(Vec3D position, const char *name, Obj *model, Sprite *sprite, int type){
-	Entity *shield;
-	shield = shield_new();
-	if(shield == NULL)return;
-	vec3d_cpy(shield->body.position, position);
-	shield->body.position.y += .5;
-	shield->rotation = vec3d(90,90,90);
-	//shield->scale = vec3d(0.3,0.05,0.3);
-	shield->scale = vec3d(6,0.05,6);
-	shield->objModel = model;
-	shield->texture = sprite;
-	cube_set(shield->body.bounds, position.x, position.y, position.z, 10, 5, 10);
-    shield->type = type;
-	shield->time = 3000;
-	shield->think = shieldThink;
-
-	return shield;
-}
-
 void playerThink(Entity *self){
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
 	self->body.position.y += cSpeed;
@@ -451,6 +345,14 @@ void playerThink(Entity *self){
 
 void powerThink(Entity *self){
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
+	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
+		
+		player1->power = self->power;
+		entity_free(self);
+	}
+	if(self->body.position.y < cameraPosition.y-worldBack){
+		entity_free(self);
+	}
 }
 
 void wallThink(Entity *self){
@@ -541,21 +443,11 @@ void wallThink(Entity *self){
 	}
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
 	self->body.position.y -= cSpeed;
-	if(cube_cube_intersection(self->body.bounds, player1->body.bounds)){
+	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
 		cSpeed = 0.01;
 		slog("Collision Detected");
 		cUse -= 200;
 		self->body.position.y = cameraPosition.y + 100;
-	}
-	for(i = 0; i < __shield_max; i+= 1){
-		if(__shield_list[i].inuse && __shield_list[i].type == T_SHIELDW){
-			slog("stuff %i", __shield_list[i].body.bounds.x);
-			if(cube_cube_intersection(self->body.bounds, __shield_list[i].body.bounds)){
-				slog("collided with shield");
-				entity_free(&__shield_list[i]);
-				entity_free(self);
-			}
-		}
 	}
 	if(self->body.position.y < cameraPosition.y-worldBack){
 		entity_free(self);
@@ -568,8 +460,8 @@ void bulletThink(Entity *self){
     if(self->body.position.y < cameraPosition.y-worldBack){
 		entity_free(self);
 	}
-	if(cube_cube_intersection(self->body.bounds, player1->body.bounds)){
-		cSpeed -= 0.01;
+	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
+		cSpeed -= 0.1;
 		entity_free(self);
 	}
 	cUse -= 50;
@@ -588,22 +480,11 @@ void shipThink(Entity *self){
 	if(self->body.position.y < cameraPosition.y-worldBack){
 		entity_free(self);
 	}
-	if(cube_cube_intersection(self->body.bounds, player1->body.bounds)){
+	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
 		cSpeed = 0.01;
 		cUse = 0;
 		entity_free(self);
 	}
-}
-
-void shieldThink(Entity *self){
-
-	self->body.position.y += cSpeed;
-	if(self->time > 0){
-		self->time -= 1;
-	}else{
-		entity_free(self);		
-	}
-
 }
 
 

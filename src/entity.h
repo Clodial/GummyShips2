@@ -41,6 +41,8 @@ typedef struct Entity_S
 
 	int wMove;
 
+	int powerLength;
+
     Obj *objModel;
     Obj *objAnimation[24];
     int state;
@@ -91,17 +93,6 @@ void entity_draw(Entity *ent);
 void entity_free(Entity *ent);
 
 int entity_is_entity(void *data);
-
-/**
-* @brief same as the above functions but only for shields
-*/
-void shield_init(int maxShield);
-Entity *shield_new();
-void shield_draw_all();
-void shield_draw();
-void shield_free(Entity *ent);
-void shield_think_all();
-void shield_is_entity(void *data);
 
 Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *texture, int aHp);
 Entity *newPower(Vec3D position, const char *name, Obj *model, Sprite *texture, int type);

@@ -37,6 +37,8 @@ extern float worldBack;
 extern float worldFront;
 extern Entity *player1;
 extern int buttonDown;
+extern int cBarrelRoll;
+extern int cBarrelUse;
 int cTime = 0;      //I did say this was a random generation-type game
                     //so, instead of using my former technique of having 
 int cUse = 1000;
@@ -62,7 +64,6 @@ int main(int argc, char *argv[])
     model_init();
     obj_init();
     entity_init(255);
-	shield_init(3);
 
 	enObj = obj_load("models/cube.obj");
     enText = LoadSprite("models/mountain_text.png",1024,1024);
@@ -77,6 +78,9 @@ int main(int argc, char *argv[])
 		}
 		if(cUse < 1000){
 			cUse += 5;
+		}
+		if(cBarrelRoll < 200 && cBarrelUse == 0){
+			cBarrelRoll += 1;
 		}
 		if(cSpeed < 1){
 			switch(cTime % 200){
@@ -167,7 +171,6 @@ int main(int argc, char *argv[])
 			}
 		}
         entity_think_all();
-        shield_think_all();
 
         bGameLoopRunning = mainInput();
 
@@ -179,7 +182,6 @@ int main(int argc, char *argv[])
             cameraRotation);
         
         entity_draw_all();
-		shield_draw_all();
         //glTranslatef(-5,0,0);
         glPushMatrix();
 		glPopMatrix();
