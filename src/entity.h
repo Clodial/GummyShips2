@@ -8,7 +8,7 @@
 #include "body.h"
 
 enum Type{
-	T_PLAYER, T_SHIP, T_WALL, T_BULLET, T_POWER, T_SHIELDW, T_SHIELDB
+	T_PLAYER, T_SHIP, T_WALL, T_BULLET, T_POWER, T_SHIELDW, T_SHIELDB, T_BLOCK
 };
 
 enum WType{
@@ -41,11 +41,15 @@ typedef struct Entity_S
 
 	int wMove;
 
+	int blockState;
+
     Obj *objModel;
     Obj *objAnimation[24];
+
     int state;
     float frame;
-    Sprite *texture;    /**<object texture*/
+    Sprite *texture; 
+	Sprite *subTexture;
     Body body;
     void (*think)(struct Entity_S *self);
 }Entity;
@@ -54,60 +58,146 @@ typedef struct Entity_S
 * @brief initializes what has to be loaded at the start of the game
 */
 void mainInit();
-
 /**
 * @brief control input for the game
 * @return the status of the game loop, if it has ended or not
 */
 int mainInput();
-
 /**
  * @brief initialize the entity sub system
  * @param maxEntity the maximum number of simultaneously supported entities.
  */
 void entity_init(int maxEntity);
-
 /**
  * @brief get a pointer to a new entity
  * @return NULL on no more entities or error,  a valid entity pointer otherwise
  */
 Entity *entity_new();
-
 /**
  * @brief draws all active entities
  */
 void entity_draw_all();
+/**
+* @brief activates the associated think function of all active entities (if applicable)
+*/
 void entity_think_all();
-
 /**
  * @brief draws an entity
  * @param ent the entity to draw
  */
 void entity_draw(Entity *ent);
-
 /**
  * @brief frees an entity
  */
 void entity_free(Entity *ent);
 
+/**
+* @brief given data, check if it is specifically an entity
+* @param data : 
+* @return int : either 1 or 0 
+*/
 int entity_is_entity(void *data);
 
-Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *texture, int aHp);
+/**
+* @brief Creates a new player object
+* @param position: position to be instantiated
+* @param name: 
+* @param model:
+* @param texture: 
+* @param aHp: 
+*/
+Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *subSprite, Sprite *texture, int aHp);
+/**
+* @brief Creates a new player object
+* @param position: position to be instantiated
+* @param name: 
+* @param model:
+* @param texture: 
+* @param aHp: 
+*/
 Entity *newPower(Vec3D position, const char *name, Obj *model, Sprite *texture, int type);
-
+/**
+* @brief Creates a new player object
+* @param position: position to be instantiated
+* @param name: 
+* @param model:
+* @param texture: 
+* @param aHp: 
+*/
 Entity *newWall(Vec3D position, const char *name, Obj *model, Sprite *texture, int type, int move);
+/**
+* @brief Creates a new player object
+* @param position: position to be instantiated
+* @param name: 
+* @param model:
+* @param texture: 
+* @param aHp: 
+*/
 Entity *newBullet(Vec3D position, const char *name, Obj *model, Sprite *texture);
+/**
+* @brief Creates a new player object
+* @param position: position to be instantiated
+* @param name: 
+* @param model:
+* @param texture: 
+* @param aHp: 
+*/
 Entity *newShip(Vec3D position, const char *name, Obj *model, Sprite *texture);
-
+/**
+* @brief Creates a new Blockade Wall Object
+* @param position: position to be instantiated
+* @param name: Object's name
+* @param model: Object's first model
+* @param subModel: Object's second model
+* @param texture: Object's first texture
+* @param subTexture: Object's second texture 
+*/
+Entity *newBlockAde(Vec3D position, const char *name, Obj *model, Sprite *sprite);
+/**
+* @brief Creates a new player object
+* @param position: position to be instantiated
+* @param name: 
+* @param model:
+* @param texture: 
+* @param aHp: 
+*/
 Entity *newShield(Vec3D position, const char *name, Obj *model, Sprite *texture, int type);
 
+/**
+* @brief Player think method
+* @param self: the player entity
+*/
 void playerThink(Entity *self);
+/**
+* @brief Player think method
+* @param self: the player entity
+*/
 void powerThink(Entity *self);
-
+/**
+* @brief Player think method
+* @param self: the player entity
+*/
 void wallThink(Entity *self);
+/**
+* @brief Player think method
+* @param self: the player entity
+*/
 void bulletThink(Entity *self);
+/**
+* @brief Player think method
+* @param self: the player entity
+*/
 void shipThink(Entity *self);
-
+/**
+* @brief Player think method
+* @param self: the player entity
+*/
 void shieldThink(Entity *self);
+/**
+* @brief Blockade Wall Object think
+* @param self: the blockade wall's think object
+*/
+void blockThink(Entity *self);
+
 
 #endif

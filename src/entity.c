@@ -36,18 +36,17 @@ int shields = 0;
 int powerLength = 0;
 Entity *player1;
 Sprite *shieldText;
-Obj *shieldObj;
+Sprite *temp;
 
 void mainInit(){
 	Obj *playModel;
 	Sprite *playSprite;
 
-	shieldText = LoadSprite("models/cube_text.png",50,50);
-	shieldObj = obj_load("models/cube.obj");
+	temp = LoadSprite("models/mountain_text.png",50,50);
 	playModel = obj_load("models/cube.obj");
 	playSprite = LoadSprite("models/cube_text.png",50,50);
 
-	player1 = newPlayer(vec3d(0,-5,0), "player", playModel, playSprite, 3);
+	player1 = newPlayer(vec3d(0,-5,0), "player", playModel,LoadSprite("models/mountain_text.png",1024,1024), playSprite, 3);
 }
 
 int mainInput(){
@@ -101,12 +100,15 @@ int mainInput(){
 						}else{
 							cSpeed = 0.01;
 						}
+						temp = player1->texture;
+						player1->texture = player1->subTexture;
+						player1->subTexture = temp;
 						cUse -= 20;
 						break;
 					case SDLK_z:
 						if(cBarrelUse){
 							if(cBarrelRoll > 0){
-								cBarrelRoll -= 5;
+								cBarrelRoll -= 1;
 							}
 							else{
 								cBarrelUse = 0;
@@ -115,6 +117,9 @@ int mainInput(){
 						else if(cBarrelRoll >= 200){
 							cBarrelUse = 1;
 						}
+						temp = player1->texture;
+						player1->texture = player1->subTexture;
+						player1->subTexture = temp;
 						break;
 					default:
 						break;
@@ -135,11 +140,19 @@ int mainInput(){
 						player1->vHorz = 0;
 						break;
 					case SDLK_c:
+						temp = player1->texture;
+						player1->texture = player1->subTexture;
+						player1->subTexture = temp;
 						cSpeed = 0.01;
-						cUse = 0;
+						slog("Let Go of Invincibility");
+						break;
 					case SDLK_z:
+						temp = player1->texture;
+						player1->texture = player1->subTexture;
+						player1->subTexture = temp;
 						cBarrelRoll = 0;
 						cBarrelUse = 0;
+						slog("Let Go of HypeSpeed");
 						break;
 					default:
 						break;
@@ -250,12 +263,13 @@ void entity_draw(Entity *ent)
     );
 }
 
-Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *sprite, int aHp){
+Entity *newPlayer(Vec3D position, const char *name, Obj *model, Sprite *subSprite, Sprite *sprite, int aHp){
     Entity *player;
     player = entity_new();
     if(player == NULL) return;
     player->objModel = model;
     player->texture = sprite;
+	player->subTexture = subSprite;
     player->rotation = vec3d(90,90,90);
     vec3d_cpy(player->body.position, position);
     cube_set(player->body.bounds, position.x, position.y, position.z, 0.2, 0.2, 0.2);
@@ -341,6 +355,25 @@ Entity *newship(Vec3D position, const char *name, Obj *model, Sprite *sprite){
     ship->think = shipThink;
 
     return ship;
+}
+
+Entity *newBlockAde(Vec3D position, const char *name, Obj *model, Sprite *sprite){
+	Entity *block;
+	slog("Created Block");
+	block = entity_new();
+	if(block == NULL)return;
+	block->objModel = model;
+	block->texture = sprite;
+	block->rotation = vec3d(90,90,90);
+	block->scale = vec3d(1,0.01,1);
+	block->time = 240;
+	block->blockState = 0;
+	vec3d_cpy(block->body.position, position);
+	cube_set(block->body.bounds, position.x, position.y, position.z, 1, 0.01, 1);
+	block->type = T_BLOCK;
+	block->think = blockThink;
+
+	return block;
 }
 
 void playerThink(Entity *self){
@@ -531,10 +564,37 @@ void shipThink(Entity *self){
 	}
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
 		cSpeed = 0.01;
-		cUse = 0;
 		entity_free(self);
 	}
 }
+void blockThink(Entity *self){
+	//Sprite *sprite1, *sprite2;
+	//sprite1 = self->texture;
+	//sprite2 = self->subTexture;
 
+	if(self->time > 0){
+		self->time -= 1;
+	}
+	if(self->blockState == 0 && self->time <= 0){
+		self->blockState = 1;
+		self->time = 200;
+		//FreeSprite(self->texture);
+		slog("switched state");
+	}
+	if(self->blockState){
+		if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
+			cSpeed = 0.01;
+			entity_free(self);
+		}
+		if(self->time > 0){
+			self->time -= 1;
+		}else{
+			entity_free(self);
+		}
+	}
+	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.5, 0.1, 0.5);
+	self->body.position.y += cSpeed;
+
+}
 
 /*eol@eof*/

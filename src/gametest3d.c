@@ -140,6 +140,8 @@ int main(int argc, char *argv[])
 							break;
 					}
 					break;
+				case 199:
+					testEn = newBlockAde(vec3d((rand() % (int)(worldWidth * 2))-worldWidth, player1->body.position.y, (rand()%(int)worldHeight * 2)- worldHeight), "block", obj_load("models/cube.obj"), LoadSprite("models/cube_text.png",1024,1024));
 				default:
 					break;
 			}
