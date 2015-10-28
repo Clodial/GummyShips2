@@ -377,8 +377,6 @@ Entity *newBlockAde(Vec3D position, const char *name, Obj *model, Sprite *sprite
 }
 
 void playerThink(Entity *self){
-	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
-	self->body.position.y += cSpeed;
 	cameraPosition.y += cSpeed;
 	if((self->vHorz < 0 && self->body.position.x > -worldWidth) || (self->vHorz > 0 && self->body.position.x < worldWidth))
 	{
@@ -388,10 +386,11 @@ void playerThink(Entity *self){
 	{
 		self->body.position.z += self->vVert;
 	}
+	self->body.position.y += cSpeed;
+	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
 }
 
 void powerThink(Entity *self){
-	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 1, 0.2, 1);
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds)){
 		player1->power = self->power;
 		switch(self->power){
@@ -410,6 +409,7 @@ void powerThink(Entity *self){
 	if(self->body.position.y < cameraPosition.y-worldBack){
 		entity_free(self);
 	}
+	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 1, 0.2, 1);
 }
 
 void wallThink(Entity *self){
@@ -501,14 +501,6 @@ void wallThink(Entity *self){
 	if(player1->power == P_BOMB){
 		entity_free(self);
 	}
-	if(player1->power == P_MINI){
-		self->scale = vec3d(0.1,0.1,0.1);
-		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.1, 0.1, 0.1);
-	}
-	else{
-		self->scale = vec3d(0.5,0.5,0.5);
-		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.5, 0.5, 0.5);
-	}
 	self->body.position.y -= cSpeed;
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
 		cSpeed = 0.01;
@@ -519,11 +511,17 @@ void wallThink(Entity *self){
 	if(self->body.position.y < cameraPosition.y-worldBack){
 		entity_free(self);
 	}
+	if(player1->power == P_MINI){
+		self->scale = vec3d(0.1,0.1,0.1);
+		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.1, 0.1, 0.1);
+	}
+	else{
+		self->scale = vec3d(0.5,0.5,0.5);
+		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.5, 0.5, 0.5);
+	}
 }
 
 void bulletThink(Entity *self){
-	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
-	self->body.position.y -= 0.1;
 	if(player1->power == P_BOMB){
 		entity_free(self);
 	}
@@ -538,18 +536,12 @@ void bulletThink(Entity *self){
 		entity_free(self);
 	}
 	cUse -= 50;
+	self->body.position.y -= 0.1;
+	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
 }
 
 void shipThink(Entity *self){
 	Entity *bullet;
-
-	if(player1->power == P_MINI){
-		self->scale = vec3d(0.02, 0.02, 0.02);
-		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.02, 0.02, 0.02);
-	}else{
-		self->scale = vec3d(0.2, 0.2, 0.2);
-		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
-	}
 	self->time += 1;
 	if(player1->power == P_BOMB){
 		entity_free(self);
@@ -566,6 +558,13 @@ void shipThink(Entity *self){
 		cSpeed = 0.01;
 		entity_free(self);
 	}
+	if(player1->power == P_MINI){
+		self->scale = vec3d(0.02, 0.02, 0.02);
+		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.02, 0.02, 0.02);
+	}else{
+		self->scale = vec3d(0.2, 0.2, 0.2);
+		cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.2, 0.2, 0.2);
+	}
 }
 void blockThink(Entity *self){
 	//Sprite *sprite1, *sprite2;
@@ -581,20 +580,20 @@ void blockThink(Entity *self){
 		//FreeSprite(self->texture);
 		slog("switched state");
 	}
-	if(self->blockState){
-		if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
-			cSpeed = 0.01;
-			entity_free(self);
-		}
+	if(self->blockState == 1){
 		if(self->time > 0){
 			self->time -= 1;
 		}else{
 			entity_free(self);
 		}
+		if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
+			slog("collide with block");
+			cSpeed = 0.01;
+			entity_free(self);
+		}
 	}
-	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.5, 0.1, 0.5);
 	self->body.position.y += cSpeed;
-
+	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.5, 0.1, 0.5);
 }
 
 /*eol@eof*/
