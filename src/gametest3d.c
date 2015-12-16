@@ -20,11 +20,14 @@
  */
 #include "simple_logger.h"
 #include "graphics3d.h"
+#include "body.h"
 #include "shader.h"
 #include "obj.h"
 #include "vector.h"
 #include "sprite.h"
 #include "entity.h"
+#include "level.h"
+#include "text.h"
 #include <math.h>
 #include <stdlib.h>
 
@@ -40,184 +43,127 @@ extern int buttonDown;
 extern int cBarrelRoll;
 extern int cBarrelUse;
 extern int powerLength;
+extern int highScore;
+
+int gameState = 0;
+int gamePause = 0;
 int cTime = 0;      //I did say this was a random generation-type game
                     //so, instead of using my former technique of having 
 int cUse = 1000;
+int score = 0;
 Vec3D cameraPosition = {0, -12, 0};
 Vec3D cameraRotation = {90,0,0};
 
 int main(int argc, char *argv[])
 {
+	int val;
     int i;
+	int makePlayer = 0;		//This is so I can have the playable character come up on the main game state without over making itself
     float r = 0;
+	Entity *testEn;
     char bGameLoopRunning = 1;
     SDL_Event e;
-    Entity *testEn;
 	Obj *enObj;
-	Sprite *enText;
+	char enText[] = "models/red_piece.png";
+	char shipText[] = "models/yell_piece.png";
+	char powText[] = "models/green_piece.png";
+	char blText[] = "models/orange_piece.png";
 	int randomNum;
 
+	//menu state variables
+	int cursor = 0;
+
+	//tutorial state variables
+	int tutSection = 0;
+
     init_logger("gametest3d.log");
-    if (graphics3d_init(1024,768,1,"gametest3d",33) != 0)
+    if (graphics3d_init(768,768,1,"gametest3d",33, gameState) != 0)
     {
         return -1;
     }
     model_init();
     obj_init();
     entity_init(255);
+	levelInit();
+	getHighscore();
+	val = 200;
 
-	enObj = obj_load("models/cube.obj");
-    enText = LoadSprite("models/mountain_text.png",1024,1024);
-
-	mainInit();
-    
 	while (bGameLoopRunning)
     {
-		cTime += 1;
-		if(cSpeed < .1){
-			cSpeed += .001;
-		}
-		if(cUse < 1000){
-			cUse += 5;
-		}
-		if(cBarrelRoll < 200 && cBarrelUse == 0){
-			cBarrelRoll += 1;
-		}
-		if(powerLength > 0){
-			powerLength -= 1;
-		}else{
-			player1->power = P_NONE;
-		}
-		if(cSpeed < 1){
-			switch(cTime % 200){
-				case 50:
-					randomNum = rand()%4;
-					switch(randomNum){
-						case W_ZIG:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG, rand()%4);
-							break;
-						case W_STRAIGHT:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT, 0);
-							break;
-						case W_HORZ:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ, rand()%2);
-							break;
-						case W_VERT:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT, rand()%2);
-							break;
-					}
-					break;
-				case 100:
-					testEn = newship(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "ship", obj_load("models/cube.obj"), LoadSprite("models/cube_text.png",50,50));
-					break;
-				case 150:
-					randomNum = rand()%4;
-					switch(randomNum){
-						case W_ZIG:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG, rand()%4);
-							break;
-						case W_STRAIGHT:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT, 0);
-							break;
-						case W_HORZ:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ, rand()%2);
-							break;
-						case W_VERT:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT, rand()%2);
-							break;
-					}
-					break;
-				case 175:
-					switch(rand()%3){
-						case 1:
-							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_MINI);
-							break;
-						case 2:
-							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_BOMB);
-							break;
-						default:
-							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_INVERT);
-							break;
-					}
-					break;
-				case 199:
-					testEn = newBlockAde(vec3d((rand() % (int)(worldWidth * 2))-worldWidth, player1->body.position.y, (rand()%(int)worldHeight * 2)- worldHeight), "block", obj_load("models/cube.obj"), LoadSprite("models/cube_text.png",1024,1024));
-				default:
-					break;
+		if (gameState == 1){
+			if (makePlayer == 0){
+				cameraPosition = vec3d(0, -12, 0 );
+				mainInit();
+				makePlayer += 1;
 			}
-		}else{
-			switch(cTime % 60){
-				case 15:
-					randomNum = rand()%4;
-					switch(randomNum){
-						case W_ZIG:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG, rand()%4);
-							break;
-						case W_STRAIGHT:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT, 0);
-							break;
-						case W_HORZ:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ, rand()%2);
-							break;
-						case W_VERT:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+60,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT, rand()%2);
-							break;
-					}
-					break;
-				case 30:
-					testEn = newship(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "ship", obj_load("models/cube.obj"), LoadSprite("models/cube_text.png",50,50));
-					break;
-				case 45:
-					randomNum = rand()%4;
-					switch(randomNum){
-						case W_ZIG:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_ZIG, rand()%4);
-							break;
-						case W_STRAIGHT:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_STRAIGHT, 0);
-							break;
-						case W_HORZ:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_HORZ, rand()%2);
-							break;
-						case W_VERT:
-							testEn = newWall(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), W_VERT, rand()%2);
-							break;
-					}
-					break;
-				case 59:
-					switch(rand()%3){
-						case 1:
-							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_MINI);
-							break;
-						case 2:
-							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_BOMB);
-							break;
-						default:
-							testEn = newPower(vec3d((rand() % (int)(worldWidth*2))-worldWidth,cameraPosition.y+160,(rand() % (int)(worldHeight*2))-worldHeight), "wall", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024), P_INVERT);
-							break;
-					}
-				default:
-					break;
+			if (gamePause == 0){
+				cTime += 1;
+				if (cSpeed < 1){
+					cSpeed += .001;
+				}
+				if (val > 100){
+					val--;
+				}
+				if (cUse < 1000){
+					cUse += 5;
+				}
+				if (cBarrelRoll < 200 && cBarrelUse == 0){
+					cBarrelRoll += 1;
+				}
+				if (powerLength > 0){
+					powerLength -= 1;
+				}
+				else{
+					player1->power = P_NONE;
+				}
+				switch (cTime % val){
+					case 1:
+						randomPick();
+						break;
+					case 50:
+						testEn = newBlockAde(vec3d((rand() % (int)(worldWidth * 2)) - worldWidth, player1->body.position.y + 3, (rand() % (int)worldHeight * 2) - worldHeight), "block", obj_load("models/cube.obj"), LoadSprite("models/orange_piece.png", 1024, 1024));
+						break;
+				}
+				entity_think_all();
 			}
 		}
-        entity_think_all();
+		else if (gameState == 0){
+			if (makePlayer){
+				entityClearList();
+				makePlayer = 0;
+			}
+		}
+		else if (gameState == 2){
+			if (makePlayer){
+				entityClearList();
+				makePlayer = 0;
+			}
+			//Tutorial Game State
+			//(Separated from Menu Game State due to reading files regarding the tutorial)
+		}
+		else if (gameState == 3){
+			if (makePlayer){
+				entityClearList();
+				makePlayer = 0;
+			}
 
-        bGameLoopRunning = mainInput();
+		}
+		bGameLoopRunning = mainInput();
 
-        graphics3d_frame_begin();
-        
-        glPushMatrix();
-        set_camera(
-            cameraPosition,
-            cameraRotation);
-        
-        entity_draw_all();
-        //glTranslatef(-5,0,0);
-        glPushMatrix();
+		graphics3d_frame_begin(gameState);
+
+		glPushMatrix();
+		set_camera(
+			cameraPosition,
+			cameraRotation);
+		entity_draw_all();
+		glPushMatrix();
+		//text_draw2("Score", vec2d(0.1f, 0.94f), vec2d(0.08f, -0.08f));
 		glPopMatrix();
-        glPopMatrix();
-        /* drawing code above here! */
-        graphics3d_next_frame();
+		//text_draw2("Score", vec2d(0.1f, 0.94f), vec2d(0.08f, -0.08f));
+		glPopMatrix();
+		/* drawing code above here! */
+		graphics3d_next_frame(gameState);
     } 
     return 0;
 }

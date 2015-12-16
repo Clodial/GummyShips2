@@ -43,7 +43,7 @@
  * @param frameDelay the desired delay (in ms) between frames
  * @return -1 on error, 0 otherwise
  */
-int graphics3d_init(int sw,int sh,int fullscreen,const char *project, Uint32 frameDelay);
+int graphics3d_init(int sw,int sh,int fullscreen,const char *project, Uint32 frameDelay, int state);
 
 /**
  * @brief get the active shader program index
@@ -53,12 +53,23 @@ GLuint graphics3d_get_shader_program();
 
 /**
  * @brief clear the drawing context and ready the next frame
+ * @param state -> meant to check what the current game state is for the background settings
  */
-void graphics3d_frame_begin();
+void graphics3d_frame_begin(int state);
 
 /**
  * @brief advance the frame, taking into account desired frame rate
  */
 void graphics3d_next_frame();
+
+/**
+ * @brief use the orthographic viewpoint	
+ */
+void useOrtho(float left, float right, float down, float up, float near, float far);
+
+/**
+ * @brief use the perspective viewpoint
+ */
+void usePerspective(float fov, float width, float height, float near, float far);
 
 #endif

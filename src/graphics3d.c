@@ -3,6 +3,7 @@
 #include "shader.h"
 #include <GL/glu.h>
 
+int screenType = 0;
 
 static SDL_GLContext __graphics3d_gl_context;
 static SDL_Window  * __graphics3d_window = NULL;
@@ -18,7 +19,7 @@ GLuint graphics3d_get_shader_program()
 
 void graphics3d_setup_default_light();
 
-int graphics3d_init(int sw,int sh,int fullscreen,const char *project,Uint32 frameDelay)
+int graphics3d_init(int sw,int sh,int fullscreen,const char *project,Uint32 frameDelay, int state)
 {
     const unsigned char *version;
     GLenum glew_status;
@@ -73,23 +74,18 @@ int graphics3d_init(int sw,int sh,int fullscreen,const char *project,Uint32 fram
         return -1;
     }
     
+	glViewport(0, 0, sw, sh);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
     
-    glViewport(0,0,sw, sh);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    /*view angle, aspect ratio, near clip distance, far clip distance*/
-    /*TODO: put near/far clip in graphics view config*/
-    gluPerspective( 40, (float)sw / (float)sh, .01, 2000.0f);
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity();
-
-    glClearColor(0.0,0.0,0.0,0.0);
-    glClear( 1 );
-    
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	if (state == 1){
+		usePerspective(40, sw, sh, .01, 2000.0f);
+		screenType = 1;
+	}
+	else{
+		useOrtho(-3, 3, -3, 3, .01, 2000.0f);
+		screenType = 0;
+	}
 
     /*Enables alpha testing*/
 /*    glAlphaFunc(GL_GREATER,0);
@@ -105,12 +101,30 @@ void graphics3d_close()
     SDL_GL_DeleteContext(__graphics3d_gl_context);
 }
 
-void graphics3d_frame_begin()
+void graphics3d_frame_begin(int state)
 {
-    glClearColor(0.0,0.0,0.0,0.0);
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    glLoadIdentity();
-    glPushMatrix();
+
+	if (state == 1){ 
+		glClearColor(0.0, 0.0, 0.0, 0.0); 
+		if (screenType == 0){
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			usePerspective(40, 768.0, 768.0, .01, 2000.0f);
+			screenType = 1;
+		}
+	}
+	else{ 
+		glClearColor(1.0, 1.0, 1.0, 0.0); 
+		if (screenType == 1){
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			useOrtho(-3, 3, -3, 3, .01, 2000.0f);
+			screenType = 0;
+		}
+	}
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+	glPushMatrix();
 }
 
 void graphics3d_next_frame()
@@ -133,7 +147,7 @@ void graphics3d_setup_default_light()
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_shininess[] = { 50.0 };
     GLfloat light_position[] = { -10.0, -10.0, 10.0, 0.0 };
-    GLfloat light_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat light_ambient[] = { 1.5, 1.5, 1.5, 1.5 };
     GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     
@@ -178,5 +192,34 @@ void graphics3d_setup_default_light()
     
 }
 
+void useOrtho(float left, float right, float down, float up, float near, float far){
+	//glPopMatrix();
+	glOrtho(left, right, down, up, near, far);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(1);
+
+	glDisable(GL_DEPTH_TEST);
+
+	atexit(graphics3d_close);
+}
+
+void usePerspective(float fov, float width, float height, float near, float far){
+	//glPopMatrix();
+	gluPerspective( fov, (float)width / (float)height, near, far);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(1);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+	atexit(graphics3d_close);
+}
 /*eol@eof*/

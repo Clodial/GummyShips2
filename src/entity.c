@@ -15,7 +15,7 @@
 #include "SDL.h"
 
 static Entity *__entity_list = NULL;
-static int __entity_max = 0;
+static int __entity_max = 255;
 static int __entity_initialized = 0;
 
 static void entity_deinitialize();
@@ -24,6 +24,9 @@ static void shield_deinit();
 extern Vec3D cameraPosition;
 extern Vec3D cameraRotation;
 extern int cUse; 
+extern int score;
+extern int gamePause;
+extern int gameState;
 
 int cBarrelRoll = 200;
 int cBarrelUse = 0;
@@ -42,9 +45,12 @@ void mainInit(){
 	Obj *playModel;
 	Sprite *playSprite;
 
+	entityClearList();
+	score = 0;
+
 	temp = LoadSprite("models/mountain_text.png",50,50);
 	playModel = obj_load("models/cube.obj");
-	playSprite = LoadSprite("models/cube_text.png",50,50);
+	playSprite = LoadSprite("models/blue_piece.png",50,50);
 
 	player1 = newPlayer(vec3d(0,-5,0), "player", playModel,LoadSprite("models/mountain_text.png",1024,1024), playSprite, 3);
 }
@@ -56,108 +62,108 @@ int mainInput(){
 	Uint8 *keys;
 
 	while(SDL_PollEvent(&eve)){
-		switch(eve.type){
+		if (gameState == 1){
+			switch (eve.type){
 			case SDL_QUIT:
 				return 0;
 				break;
 			case SDL_KEYDOWN:
-				switch(eve.key.keysym.sym){
-					case SDLK_ESCAPE:
-						return 0;
-						break;
-					case SDLK_w:
-						if(player1->power == P_INVERT){
-							player1->vVert = -0.05;
-						}
-						else{
-							player1->vVert = 0.05;
-						}
-						break;
-					case SDLK_s:
-						if(player1->power == P_INVERT){
-							player1->vVert = 0.05;
-						}else{
-							player1->vVert = -0.05;
-						}
-						break;
-					case SDLK_a:
-						if(player1->power == P_INVERT){
-							player1->vHorz = 0.05;
-						}else{
-							player1->vHorz = -0.05;
-						}
-						break;
-					case SDLK_d:
-						if(player1->power == P_INVERT){
-							player1->vHorz = -0.05;
-						}else{
-							player1->vHorz = 0.05;
-						}
-						break;
-					case SDLK_c:
-						if(cUse > 200){
-							cSpeed = 2;
-						}else{
-							cSpeed = 0.01;
-						}
-						temp = player1->texture;
-						player1->texture = player1->subTexture;
-						player1->subTexture = temp;
-						cUse -= 20;
-						break;
-					case SDLK_z:
-						if(cBarrelUse){
-							if(cBarrelRoll > 0){
-								cBarrelRoll -= 1;
-							}
-							else{
-								cBarrelUse = 0;
-							}
-						}
-						else if(cBarrelRoll >= 200){
-							cBarrelUse = 1;
-						}
-						temp = player1->texture;
-						player1->texture = player1->subTexture;
-						player1->subTexture = temp;
-						break;
-					default:
-						break;
+				switch (eve.key.keysym.sym){
+				case SDLK_ESCAPE:
+					return 0;
+					break;
+				case SDLK_w:
+					if (player1->power == P_INVERT){
+						player1->vVert = -0.05;
+					}
+					else{
+						player1->vVert = 0.05;
+					}
+					break;
+				case SDLK_s:
+					if (player1->power == P_INVERT){
+						player1->vVert = 0.05;
+					}
+					else{
+						player1->vVert = -0.05;
+					}
+					break;
+				case SDLK_a:
+					if (player1->power == P_INVERT){
+						player1->vHorz = 0.05;
+					}
+					else{
+						player1->vHorz = -0.05;
+					}
+					break;
+				case SDLK_d:
+					if (player1->power == P_INVERT){
+						player1->vHorz = -0.05;
+					}
+					else{
+						player1->vHorz = 0.05;
+					}
+					break;
+				default:
+					break;
 				}
 				break;
 			case SDL_KEYUP:
-				switch(eve.key.keysym.sym){
-					case SDLK_w:
-						player1->vVert = 0;
-						break;
-					case SDLK_s:
-						player1->vVert = 0;
-						break;
-					case SDLK_a:
-						player1->vHorz = 0;
-						break;
-					case SDLK_d:
-						player1->vHorz = 0;
-						break;
-					case SDLK_c:
-						temp = player1->texture;
-						player1->texture = player1->subTexture;
-						player1->subTexture = temp;
-						cSpeed = 0.01;
-						slog("Let Go of Invincibility");
-						break;
-					case SDLK_z:
-						temp = player1->texture;
-						player1->texture = player1->subTexture;
-						player1->subTexture = temp;
-						cBarrelRoll = 0;
-						cBarrelUse = 0;
-						slog("Let Go of HypeSpeed");
-						break;
-					default:
-						break;
+				switch (eve.key.keysym.sym){
+				case SDLK_e:
+					gameState = 0;
+					break;
+				case SDLK_w:
+					player1->vVert = 0;
+					break;
+				case SDLK_s:
+					player1->vVert = 0;
+					break;
+				case SDLK_a:
+					player1->vHorz = 0;
+					break;
+				case SDLK_d:
+					player1->vHorz = 0;
+					break;
+				case SDLK_p:
+					if (gamePause == 0){
+						gamePause = 1;
+					}
+					else{
+						gamePause = 0;
+					}
+					break;
+				default:
+					break;
 				}
 				break;
+			}
+		}
+		else if (gameState == 3){
+			switch (eve.type){
+				case SDL_KEYUP:
+					switch (eve.key.keysym.sym){
+						case SDLK_q:
+							gameState = 0;
+							break;
+						}
+					break;
+			}
+		}
+		else{
+			switch (eve.type){
+				case SDL_KEYUP:
+					switch (eve.key.keysym.sym){
+						case SDLK_q:
+							gameState = 1;
+							break;
+						case SDLK_e:
+							gameState = 3;
+							break;
+					}
+					break;
+
+			}
 		}
 	}
 	return 1;
@@ -169,7 +175,7 @@ void entity_init(int maxEntity)
     if (__entity_initialized)
     {
         slog("already initialized");
-        return;
+		return;
     }
     __entity_list = (Entity *)malloc(sizeof(Entity)*maxEntity);
     memset(__entity_list,0,sizeof(Entity)*maxEntity);
@@ -192,6 +198,17 @@ static void entity_deinitialize()
     free(__entity_list);
     __entity_max = 0;
     __entity_initialized = 0;
+}
+
+void entityClearList(){
+	int i;
+	for (i = 0; i < __entity_max; i++)
+	{
+		if (__entity_list[i].inuse)
+		{
+			entity_free(&__entity_list[i]);
+		}
+	}
 }
 
 void entity_free(Entity *ent)
@@ -227,6 +244,10 @@ void entity_think_all()
     int i;
     for (i = 0; i < __entity_max; i++)
     {
+		if ((__entity_list[i].inuse) && (gameState != 1)){
+			slog("hit this");
+			entity_free(&__entity_list[i]);
+		}
         if ((__entity_list[i].inuse) &&
             (__entity_list[i].think != NULL))
         {
@@ -507,6 +528,8 @@ void wallThink(Entity *self){
 		slog("Collision Detected");
 		cUse -= 200;
 		self->body.position.y = cameraPosition.y + 100;
+		writeHighScore(score);
+		gameState = 0;
 	}
 	if(self->body.position.y < cameraPosition.y-worldBack){
 		entity_free(self);
@@ -532,8 +555,8 @@ void bulletThink(Entity *self){
 		entity_free(self);
 	}
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
-		cSpeed -= 0.1;
 		entity_free(self);
+		score -= 50;
 	}
 	cUse -= 50;
 	self->body.position.y -= 0.1;
@@ -547,7 +570,7 @@ void shipThink(Entity *self){
 		entity_free(self);
 	}
 	if(self->time >= 300){
-		bullet = newBullet(self->body.position, "bullet", obj_load("models/cube.obj"), LoadSprite("models/mountain_text.png",1024,1024));
+		bullet = newBullet(self->body.position, "bullet", obj_load("models/cube.obj"), LoadSprite("models/yell_piece.png",1024,1024));
 		self->time = 0;
 	}
 	self->body.position.y += 0.01;
@@ -557,6 +580,8 @@ void shipThink(Entity *self){
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
 		cSpeed = 0.01;
 		entity_free(self);
+		writeHighScore(score);
+		gameState = 0;
 	}
 	if(player1->power == P_MINI){
 		self->scale = vec3d(0.02, 0.02, 0.02);
@@ -586,14 +611,33 @@ void blockThink(Entity *self){
 		}else{
 			entity_free(self);
 		}
-		if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
-			slog("collide with block");
-			cSpeed = 0.01;
-			entity_free(self);
-		}
 	}
 	self->body.position.y += cSpeed;
 	cube_set(self->body.bounds, self->body.position.x, self->body.position.y, self->body.position.z, 0.5, 0.1, 0.5);
 }
+
+Entity *newScorer(Vec3D position, int scorer){
+	Entity *scoreP;
+	scoreP = entity_new();
+	if (scoreP == NULL) return;
+	scoreP->objModel = obj_load("models/cube.obj");
+	scoreP->rotation = vec3d(90, 90, 90);
+	vec3d_cpy(scoreP->body.position, position);
+	cube_set(scoreP->body.bounds, position.x, position.y, position.z, .001, .001, .001);
+	scoreP->scAdd = scorer;
+	scoreP->type = T_SCORE;
+	scoreP->think = scoreThink;
+
+	return scoreP;
+}
+void scoreThink(Entity *self){
+	if (self->body.position.y < cameraPosition.y - worldBack){
+		slog("%i", score);
+		score += self->scAdd;
+		entity_free(self);
+	}
+}
+
+
 
 /*eol@eof*/

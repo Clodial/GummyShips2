@@ -8,7 +8,7 @@
 #include "body.h"
 
 enum Type{
-	T_PLAYER, T_SHIP, T_WALL, T_BULLET, T_POWER, T_SHIELDW, T_SHIELDB, T_BLOCK
+	T_PLAYER, T_SHIP, T_WALL, T_BULLET, T_POWER, T_SHIELDW, T_SHIELDB, T_BLOCK, T_SCORE
 };
 
 enum WType{
@@ -45,6 +45,8 @@ typedef struct Entity_S
 
     Obj *objModel;
     Obj *objAnimation[24];
+
+	int scAdd;
 
     int state;
     float frame;
@@ -86,11 +88,16 @@ void entity_think_all();
  * @param ent the entity to draw
  */
 void entity_draw(Entity *ent);
+
 /**
  * @brief frees an entity
  */
 void entity_free(Entity *ent);
 
+/**
+ * @brief clear list without breaking the game
+ */
+void entityClearList();
 /**
 * @brief given data, check if it is specifically an entity
 * @param data : 
@@ -199,5 +206,9 @@ void shieldThink(Entity *self);
 */
 void blockThink(Entity *self);
 
+
+// This is the object created to determine the score of each new wave coming in
+Entity *newScorer(Vec3D position, int scorer);
+void scoreThink(Entity *self);
 
 #endif
