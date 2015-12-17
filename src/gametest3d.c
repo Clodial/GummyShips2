@@ -53,6 +53,7 @@ int gameState = 0;
 int gamePause = 0;
 int cTime = 0;      //I did say this was a random generation-type game
                     //so, instead of using my former technique of having 
+int val = 200;
 int cUse = 1000;
 int score = 0;
 Vec3D cameraPosition = {0, -12, 0};
@@ -60,7 +61,7 @@ Vec3D cameraRotation = {90,0,0};
 
 int main(int argc, char *argv[])
 {
-	int val;
+
     int i;
 	int makePlayer = 0;		//This is so I can have the playable character come up on the main game state without over making itself
     float r = 0;
@@ -107,7 +108,7 @@ int main(int argc, char *argv[])
 				if (cSpeed < 1){
 					cSpeed += .001;
 				}
-				if (val > 100){
+				if (val > 50){
 					val--;
 				}
 				if (cUse < 1000){
@@ -131,17 +132,17 @@ int main(int argc, char *argv[])
 			}
 		}
 		else if (gameState == 0){
-			m = 0;
-			if (makePlayer){
+			if (makePlayer || m == 1){
 				entityClearList();
 				makePlayer = 0;
+				m = 0;
 			}
 		}
 		else if (gameState == 2){
-			m = 0;
-			if (makePlayer){
+			if (makePlayer || m == 1){
 				entityClearList();
 				makePlayer = 0;
+				m = 0;
 			}
 			//Tutorial Game State
 			//(Separated from Menu Game State due to reading files regarding the tutorial)

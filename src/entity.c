@@ -31,6 +31,7 @@ extern int gameState;
 extern int editX;
 extern int editY;
 extern int m;
+extern int val;
 
 int cBarrelRoll = 200;
 int cBarrelUse = 0;
@@ -41,6 +42,7 @@ float worldFront = 50;
 float cSpeed = 0.01;
 int shields = 0;
 int powerLength = 0;
+int health = 0;
 Entity *player1;
 Entity *editUser;
 Sprite *shieldText;
@@ -52,6 +54,7 @@ void mainInit(){
 
 	entityClearList();
 	score = 0;
+	health = 3;
 
 	temp = LoadSprite("models/mountain_text.png",50,50);
 	playModel = obj_load("models/cube.obj");
@@ -604,11 +607,14 @@ void wallThink(Entity *self){
 	self->body.position.y -= cSpeed;
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
 		cSpeed = 0.01;
-		slog("Collision Detected");
 		cUse -= 200;
-		self->body.position.y = cameraPosition.y + 100;
-		writeHighScore(score);
-		gameState = 0;
+		entity_free(self);
+		val = 200;
+		health--;
+		if (health < 0){
+			writeHighScore(score);
+			gameState = 0;
+		}
 	}
 	if(self->body.position.y < cameraPosition.y-worldBack){
 		entity_free(self);
@@ -659,8 +665,12 @@ void shipThink(Entity *self){
 	if(cube_cube_intersection(self->body.bounds, player1->body.bounds) && cBarrelUse == 0){
 		cSpeed = 0.01;
 		entity_free(self);
-		writeHighScore(score);
-		gameState = 0;
+		val = 200;
+		health--;
+		if (health < 0){
+			writeHighScore(score);
+			gameState = 0;
+		}
 	}
 	if(player1->power == P_MINI){
 		self->scale = vec3d(0.02, 0.02, 0.02);

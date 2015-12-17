@@ -218,4 +218,8 @@ void stateThink(Entity *self);
 Entity *newMover(Vec3D position, const char *name, Sprite *spr);
 void moveThink(Entity *self);
 
+Entity *newSpHUD(Vec3D position, const char *name, Sprite *spr);
+void hudThink(Entity *self);
+void drawHUD();
+
 #endif
