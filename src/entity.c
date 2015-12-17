@@ -216,7 +216,7 @@ int mainInput(){
 							}
 							break;
 						case SDLK_z:
-							changeLvlPiece(editX, editY);
+							changeLvlPiece(editY, editX);
 							break;
 					}
 					break;
