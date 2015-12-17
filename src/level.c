@@ -15,7 +15,12 @@ extern int score;
 extern float worldWidth;
 extern float worldHeight;
 extern Vec3D cameraPosition;
+extern Entity *editUser;
+extern int editX;
+extern int editY;
+extern int m;
 
+char *fLoc = "files/string1.config";
 FILE *level1Edit = NULL;
 FILE *level2Edit = NULL;
 FILE *level3Edit = NULL;
@@ -34,6 +39,8 @@ int *defLvl[5][5] = {
 	{ 0, 0, 0, 0, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
+
+int *newLvl[5][5];
 
 void levelInit(){
 	
@@ -235,7 +242,6 @@ void createLevel(int sc){
 	char enObj[] = "models/cube.obj";
 	
 	//memcpy(iSect, *lvlSect, sizeof(lvlSect));
-
 	testEn = newScorer(vec3d(100, cameraPosition.y + 60, 100),sc);
 	for (i = 0; i < 5; i++){ //Y-Axis
 		for (j = 0; j < 5; j++){ //X-Axis
@@ -247,19 +253,19 @@ void createLevel(int sc){
 					break;
 				case 1:
 					//ships
-					testEn = newship(vec3d(worldWidth/2 * (j - 2.5), cameraPosition.y + 60, worldHeight/2 * (i - 2.5)), "ship", obj_load(enObj), LoadSprite(shipText, 1024, 1024));
+					testEn = newship(vec3d(worldWidth/2 * (j - 2), cameraPosition.y + 60, worldHeight/2 * (i - 2)), "ship", obj_load(enObj), LoadSprite(shipText, 1024, 1024));
 					break;
 				case 2:
 					//powerups
 					switch (rand() % 3){
 						case 1:
-							testEn = newPower(vec3d(worldWidth / 2 * (j - 2.5), cameraPosition.y + 60, worldHeight / 2 * (i - 2.5)), "power", obj_load(enObj), LoadSprite(powText, 1024, 1024), P_MINI);
+							testEn = newPower(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 60, worldHeight / 2 * (i - 2)), "power", obj_load(enObj), LoadSprite(powText, 1024, 1024), P_MINI);
 							break;
 						case 2:
-							testEn = newPower(vec3d(worldWidth / 2 * (j - 2.5), cameraPosition.y + 60, worldHeight / 2 * (i - 2.5)), "power", obj_load(enObj), LoadSprite(powText, 1024, 1024), P_BOMB);
+							testEn = newPower(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 60, worldHeight / 2 * (i - 2)), "power", obj_load(enObj), LoadSprite(powText, 1024, 1024), P_BOMB);
 							break;
 						default:
-							testEn = newPower(vec3d(worldWidth / 2 * (j - 2.5), cameraPosition.y + 60, worldHeight / 2 * (i - 2.5)), "power", obj_load(enObj), LoadSprite(powText, 1024, 1024), P_INVERT);
+							testEn = newPower(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 60, worldHeight / 2 * (i - 2)), "power", obj_load(enObj), LoadSprite(powText, 1024, 1024), P_INVERT);
 							break;
 					}
 					break;
@@ -267,16 +273,16 @@ void createLevel(int sc){
 					//walls
 					switch (rand() % 4){
 						case 0:
-							testEn = newWall(vec3d(worldWidth / 2 * (j - 2.5), cameraPosition.y + 60, worldHeight / 2 * (i - 2.5)), "wall", obj_load(enObj), LoadSprite(enText, 1024, 1024), W_STRAIGHT, 0);
+							testEn = newWall(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 60, worldHeight / 2 * (i - 2)), "wall", obj_load(enObj), LoadSprite(enText, 1024, 1024), W_STRAIGHT, 0);
 							break;
 						case 1:
-							testEn = newWall(vec3d(worldWidth / 2 * (j - 2.5), cameraPosition.y + 60, worldHeight / 2 * (i - 2.5)), "wall", obj_load(enObj), LoadSprite(enText, 1024, 1024), W_HORZ, rand() % 2);
+							testEn = newWall(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 60, worldHeight / 2 * (i - 2)), "wall", obj_load(enObj), LoadSprite(enText, 1024, 1024), W_HORZ, rand() % 2);
 							break;
 						case 2:
-							testEn = newWall(vec3d(worldWidth / 2 * (j - 2.5), cameraPosition.y + 60, worldHeight / 2 * (i - 2.5)), "wall", obj_load(enObj), LoadSprite(enText, 1024, 1024), W_ZIG, rand() % 4);
+							testEn = newWall(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 60, worldHeight / 2 * (i - 2)), "wall", obj_load(enObj), LoadSprite(enText, 1024, 1024), W_ZIG, rand() % 4);
 							break;
 						default:
-							testEn = newWall(vec3d(worldWidth / 2 * (j - 2.5), cameraPosition.y + 60, worldHeight / 2 * (i - 2.5)), "wall", obj_load(enObj), LoadSprite(enText, 1024, 1024), W_VERT, rand() % 2);
+							testEn = newWall(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 60, worldHeight / 2 * (i - 2)), "wall", obj_load(enObj), LoadSprite(enText, 1024, 1024), W_VERT, rand() % 2);
 							break;
 					}
 					break;
@@ -284,6 +290,156 @@ void createLevel(int sc){
 		}
 	}
 
+}
+
+void createLvlEdit(){
+
+	int i = 0;
+	int j = 0;
+	int c = 25;
+	int scItem;
+	int ch;
+	char line[256];
+	FILE *fFile;
+
+	//m = 0;
+	fFile = fopen(fLoc, "r");
+	slog("%s", fLoc);
+	if (fFile != NULL){
+		while (fgets(line, 256, fFile)){
+			sscanf(line, "%i", &ch);
+			if ((i < 5 || j < 4) && c > 0){
+				c--;
+				switch (ch){
+				case 0:
+					lvlSect[j][i] = 0;
+					break;
+				case 1:
+					lvlSect[j][i] = 1;
+					break;
+				case 2:
+					lvlSect[j][i] = 2;
+					break;
+				case 3:
+					lvlSect[j][i] = 3;
+					break;
+				}
+				if (i < 4){
+					i++;
+				}
+				else if (j < 4){
+					j++;
+					i = 0;
+				}
+			}
+		}
+		drawEditLvl();
+		fclose(fFile);
+	}
+
+}
+
+void drawEditLvl(){
+
+	int i, j, c;
+	//int iSect[5][5];
+	int randomNum;
+	Entity *testEn;
+	char enText[] = "models/red_piece.png";
+	char shipText[] = "models/yell_piece.png";
+	char powText[] = "models/green_piece.png";
+	char blText[] = "models/black_piece.png";
+	char enObj[] = "models/cube.obj";
+
+	//memcpy(iSect, *lvlSect, sizeof(lvlSect));
+
+	//testEn = newScorer(vec3d(100, cameraPosition.y + 60, 100), sc);
+	for (i = 0; i < 5; i++){ //Y-Axis
+		for (j = 0; j < 5; j++){ //X-Axis
+			c = lvlSect[i][j];
+			newLvl[i][j] = c;
+			switch (c){
+				case 0:
+					//nothing
+					testEn = newState(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 5, worldHeight / 2 * (i - 2)), "state", LoadSprite(blText, 1024, 1024), 0);
+					break;
+				case 1:
+					//ships
+					testEn = newState(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 5, worldHeight / 2 * (i - 2)), "state", LoadSprite(shipText, 1024, 1024), 1); 
+					break;
+				case 2:
+					//powerups
+					testEn = newState(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 5, worldHeight / 2 * (i - 2)), "state", LoadSprite(powText, 1024, 1024), 2);
+					break;
+				case 3:
+					//walls
+					testEn = newState(vec3d(worldWidth / 2 * (j - 2), cameraPosition.y + 5, worldHeight / 2 * (i - 2)), "state", LoadSprite(enText, 1024, 1024), 3);
+					break;
+			}
+		}
+	}
+	slog("yo");
+}
+
+void changeLvlPiece(int locX, int locY){
+
+	int c;
+	c = newLvl[locX][locY];
+	switch (c){
+		case 0:
+			newLvl[locX][locY] = 1;
+			break;
+		case 1:
+			newLvl[locX][locY] = 2;
+			break;
+		case 2:
+			newLvl[locX][locY] = 3;
+			break;
+		default:
+			newLvl[locX][locY] = 0;
+			break;
+	}
+	rewriteFile();
+	entityClearList();
+	editUser = newMover(vec3d(worldWidth / 2 * (locY - 2), cameraPosition.y + 10, worldHeight / 2 * (locX - 2)), "edit", LoadSprite("models/orange_piece.png", 1024, 1024));
+	createLvlEdit();
+}
+
+void rewriteFile(){
+
+	FILE *fFile;
+	int i, j, sc;
+	int addItem;
+
+	sc = 0;
+
+	fFile = fopen(fLoc, "w");
+	if (fFile != NULL){
+		for (i = 0; i < 5; i++){
+			for (j = 0; j < 5; j++){
+				addItem = newLvl[i][j];
+				switch (addItem){
+					case 0:
+						fprintf(fFile, "%i\n", addItem);
+						break;
+					case 1:
+						sc += 50;
+						fprintf(fFile, "%i\n", addItem);
+						break;
+					case 2:
+						sc -= 100;
+						fprintf(fFile, "%i\n", addItem);
+						break;
+					case 3:
+						sc += 200;
+						fprintf(fFile, "%i\n", addItem);
+						break;
+				}
+			}
+		}
+		fprintf(fFile, "%i", sc);
+		fclose(fFile);
+	}
 }
 
 void getHighscore(){

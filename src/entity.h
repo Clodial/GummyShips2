@@ -8,7 +8,7 @@
 #include "body.h"
 
 enum Type{
-	T_PLAYER, T_SHIP, T_WALL, T_BULLET, T_POWER, T_SHIELDW, T_SHIELDB, T_BLOCK, T_SCORE
+	T_PLAYER, T_SHIP, T_WALL, T_BULLET, T_POWER, T_SHIELDW, T_SHIELDB, T_BLOCK, T_SCORE, T_STATE
 };
 
 enum WType{
@@ -47,6 +47,7 @@ typedef struct Entity_S
     Obj *objAnimation[24];
 
 	int scAdd;
+	int changeAble;
 
     int state;
     float frame;
@@ -210,5 +211,11 @@ void blockThink(Entity *self);
 // This is the object created to determine the score of each new wave coming in
 Entity *newScorer(Vec3D position, int scorer);
 void scoreThink(Entity *self);
+
+Entity *newState(Vec3D position, const char *name, Sprite *spr, int st);
+void stateThink(Entity *self);
+
+Entity *newMover(Vec3D position, const char *name, Sprite *spr);
+void moveThink(Entity *self);
 
 #endif

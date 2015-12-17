@@ -39,12 +39,16 @@ extern float worldWidth;
 extern float worldBack;
 extern float worldFront;
 extern Entity *player1;
+extern Entity *editUser;
 extern int buttonDown;
 extern int cBarrelRoll;
 extern int cBarrelUse;
 extern int powerLength;
 extern int highScore;
 
+int editX = 0;
+int editY = 0;
+int m = 0;
 int gameState = 0;
 int gamePause = 0;
 int cTime = 0;      //I did say this was a random generation-type game
@@ -67,7 +71,7 @@ int main(int argc, char *argv[])
 	char enText[] = "models/red_piece.png";
 	char shipText[] = "models/yell_piece.png";
 	char powText[] = "models/green_piece.png";
-	char blText[] = "models/orange_piece.png";
+	char blText[] = "models/black_piece.png";
 	int randomNum;
 
 	//menu state variables
@@ -91,10 +95,12 @@ int main(int argc, char *argv[])
 	while (bGameLoopRunning)
     {
 		if (gameState == 1){
+			m = 0;
 			if (makePlayer == 0){
 				cameraPosition = vec3d(0, -12, 0 );
 				mainInit();
 				makePlayer += 1;
+				cSpeed = .001;
 			}
 			if (gamePause == 0){
 				cTime += 1;
@@ -120,20 +126,19 @@ int main(int argc, char *argv[])
 					case 1:
 						randomPick();
 						break;
-					case 50:
-						testEn = newBlockAde(vec3d((rand() % (int)(worldWidth * 2)) - worldWidth, player1->body.position.y + 3, (rand() % (int)worldHeight * 2) - worldHeight), "block", obj_load("models/cube.obj"), LoadSprite("models/orange_piece.png", 1024, 1024));
-						break;
 				}
 				entity_think_all();
 			}
 		}
 		else if (gameState == 0){
+			m = 0;
 			if (makePlayer){
 				entityClearList();
 				makePlayer = 0;
 			}
 		}
 		else if (gameState == 2){
+			m = 0;
 			if (makePlayer){
 				entityClearList();
 				makePlayer = 0;
@@ -146,7 +151,14 @@ int main(int argc, char *argv[])
 				entityClearList();
 				makePlayer = 0;
 			}
-
+			if (m == 0){
+				entityClearList();
+				editUser = newMover(vec3d(worldWidth / 2 * (-2), cameraPosition.y + 10, worldHeight / 2 * (-2)), "edit", LoadSprite("models/orange_piece.png", 1024, 1024));
+				editX = 0;
+				editY = 0;
+				createLvlEdit();
+				m = 1;
+			}
 		}
 		bGameLoopRunning = mainInput();
 

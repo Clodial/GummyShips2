@@ -23,10 +23,14 @@ static void shield_deinit();
 
 extern Vec3D cameraPosition;
 extern Vec3D cameraRotation;
+extern char *fLoc;
 extern int cUse; 
 extern int score;
 extern int gamePause;
 extern int gameState;
+extern int editX;
+extern int editY;
+extern int m;
 
 int cBarrelRoll = 200;
 int cBarrelUse = 0;
@@ -38,6 +42,7 @@ float cSpeed = 0.01;
 int shields = 0;
 int powerLength = 0;
 Entity *player1;
+Entity *editUser;
 Sprite *shieldText;
 Sprite *temp;
 
@@ -141,17 +146,91 @@ int mainInput(){
 		}
 		else if (gameState == 3){
 			switch (eve.type){
+				case SDL_KEYDOWN:
+					switch (eve.key.keysym.sym){
+						case SDLK_ESCAPE:
+							return 0;
+							break;
+					}
+					break;
 				case SDL_KEYUP:
 					switch (eve.key.keysym.sym){
 						case SDLK_q:
 							gameState = 0;
 							break;
-						}
+						case SDLK_1:
+							fLoc = "files/string1.config";
+							entityClearList();
+							m = 0;
+							break;
+						case SDLK_2:
+							fLoc = "files/string2.config";
+							entityClearList();
+							m = 0;
+							break;
+						case SDLK_3:
+							fLoc = "files/string3.config";
+							entityClearList();
+							m = 0;
+							break;
+						case SDLK_4:
+							fLoc = "files/string4.config";
+							entityClearList();
+							m = 0;
+							break;
+						case SDLK_5:
+							fLoc = "files/string5.config";
+							entityClearList();
+							m = 0;
+							break;
+						case SDLK_w:
+							if (editUser != NULL){
+								if (editUser->body.position.z < 2){
+									editUser->body.position.z += 1;
+									editY += 1;
+								}
+							}
+							break;
+						case SDLK_a:
+							if (editUser != NULL){
+								if (editUser->body.position.x > -2){
+									editUser->body.position.x -= 1;
+									editX -= 1;
+								}
+							}
+							break;
+						case SDLK_s:
+							if (editUser != NULL){
+								if (editUser->body.position.z > -2){
+									editUser->body.position.z -= 1;
+									editY -= 1;
+								}
+							}
+							break;
+						case SDLK_d:
+							if (editUser != NULL){
+								if (editUser->body.position.x < 2){
+									editUser->body.position.x += 1;
+									editX += 1;
+								}
+							}
+							break;
+						case SDLK_z:
+							changeLvlPiece(editX, editY);
+							break;
+					}
 					break;
 			}
 		}
 		else{
 			switch (eve.type){
+				case SDL_KEYDOWN:
+					switch (eve.key.keysym.sym){
+					case SDLK_ESCAPE:
+						return 0;
+						break;
+					}
+					break;
 				case SDL_KEYUP:
 					switch (eve.key.keysym.sym){
 						case SDLK_q:
@@ -638,6 +717,49 @@ void scoreThink(Entity *self){
 	}
 }
 
+Entity *newState(Vec3D position, const char *name, Sprite *spr, int st){
+	Entity *stateItem;
+	stateItem = entity_new();
+	if (stateItem == NULL) return;
+	stateItem->objModel = obj_load("models/cube.obj");
+	stateItem->texture = spr;
+	stateItem->scale = vec3d(.2, .2, .2);
+	stateItem->rotation = vec3d(90, 90, 90);
+	vec3d_cpy(stateItem->body.position, position);
+	cube_set(stateItem->body.bounds, position.x, position.y, position.z, .25, .25, .25);
+	stateItem->state = st;
+	stateItem->type = T_STATE;
+	stateItem->think = stateThink;
+	stateItem->changeAble = 0;
 
+	return stateItem;
+}
 
+void stateThink(Entity *self){
+	if (editUser->body.position.x == self->body.position.x && editUser->body.position.z == self->body.position.z){
+		
+	}
+}
+
+Entity *newMover(Vec3D position, const char *name, Sprite *spr){
+	Entity *editor;
+	slog("yo dawg");
+	editor = entity_new();
+	if (editor == NULL) return;
+	editor->objModel = obj_load("models/cube.obj");
+	editor->texture = spr;
+	editor->scale = vec3d(.5, .5, .5);
+	editor->rotation = vec3d(90, 90, 90);
+	vec3d_cpy(editor->body.position, position);
+	cube_set(editor->body.bounds, position.x, position.y, position.z, .25, .25, .25);
+	editor->state = 0;
+	editor->type = T_STATE;
+	editor->think = moveThink;
+	
+	return editor;
+}
+
+void moveThink(Entity *self){
+
+}
 /*eol@eof*/

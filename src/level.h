@@ -37,7 +37,16 @@ void loadLevel(char *fName);
 
 void createLevel(int sc);
 
+void createLvlEdit();
+
+void drawEditLvl();
+
+void changeLvlPiece(int locX, int locY);
+
+void rewriteFile();
+
 void getHighscore();
 
 void writeHighScore(int sc);
+
 #endif
