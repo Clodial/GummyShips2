@@ -63,9 +63,9 @@ void mainInit(){
 	playModel = obj_load("models/cube.obj");
 	playSprite = LoadSprite("models/blue_piece.png",50,50);
 
-	gameSpeed = newSpeeder(vec3d(0, 1, 4), "speedHUD", LoadSprite(speedSpr, 1024, 1024));
+	gameSpeed = newSpeeder(vec3d(0, 0, 4), "speedHUD", LoadSprite(speedSpr, 1024, 1024));
 	for (i = 0; i < health; i++){
-		liveCount = newLiveC(vec3d(i - 3, 1, -4), "life", LoadSprite(liveSpr, 1024, 1024), health - i);
+		liveCount = newLiveC(vec3d(i - 3, 0, -4), "life", LoadSprite(liveSpr, 1024, 1024), health - i);
 	}
 	player1 = newPlayer(vec3d(0,-5,0), "player", playModel,LoadSprite("models/mountain_text.png",1024,1024), playSprite, 3);
 }
@@ -154,7 +154,7 @@ int mainInput(){
 				break;
 			}
 		}
-		else if (gameState == 3){
+		else if (gameState == 0){
 			switch (eve.type){
 				case SDL_KEYDOWN:
 					switch (eve.key.keysym.sym){
@@ -166,7 +166,7 @@ int mainInput(){
 				case SDL_KEYUP:
 					switch (eve.key.keysym.sym){
 						case SDLK_q:
-							gameState = 0;
+							gameState = 1;
 							break;
 						case SDLK_1:
 							fLoc = "files/string1.config";
@@ -230,28 +230,6 @@ int mainInput(){
 							break;
 					}
 					break;
-			}
-		}
-		else{
-			switch (eve.type){
-				case SDL_KEYDOWN:
-					switch (eve.key.keysym.sym){
-					case SDLK_ESCAPE:
-						return 0;
-						break;
-					}
-					break;
-				case SDL_KEYUP:
-					switch (eve.key.keysym.sym){
-						case SDLK_q:
-							gameState = 1;
-							break;
-						case SDLK_e:
-							gameState = 3;
-							break;
-					}
-					break;
-
 			}
 		}
 	}

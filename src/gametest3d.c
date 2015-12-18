@@ -132,10 +132,17 @@ int main(int argc, char *argv[])
 			}
 		}
 		else if (gameState == 0){
-			if (makePlayer || m == 1){
+			if (makePlayer){
 				entityClearList();
 				makePlayer = 0;
-				m = 0;
+			}
+			if (m == 0){
+				entityClearList();
+				editUser = newMover(vec3d(worldWidth / 2 * (-2), cameraPosition.y + 10, worldHeight / 2 * (-2)), "edit", LoadSprite("models/orange_piece.png", 1024, 1024));
+				editX = 0;
+				editY = 0;
+				createLvlEdit();
+				m = 1;
 			}
 		}
 		else if (gameState == 2){

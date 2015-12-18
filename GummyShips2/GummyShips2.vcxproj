@@ -37,10 +37,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\Matthew\Desktop\MainLibs\SDL2-2.0.3\include;C:\Users\Matthew\Desktop\MainLibs\SDL2_image-2.0.0\include;C:\Users\Matthew\Desktop\MainLibs\glew-1.13.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Matthew\Desktop\MainLibs\SDL2_mixer-2.0.0\include;C:\Users\Matthew\Desktop\MainLibs\SDL2-2.0.3\include;C:\Users\Matthew\Desktop\MainLibs\SDL2_image-2.0.0\include;C:\Users\Matthew\Desktop\MainLibs\glew-1.13.0\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>C:\Users\Matthew\Desktop\MainLibs\SDL2-2.0.3\lib\x86;C:\Users\Matthew\Desktop\MainLibs\SDL2_image-2.0.0\lib\x86;C:\Users\Matthew\Desktop\MainLibs\glew-1.13.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\Matthew\Desktop\MainLibs\SDL2_mixer-2.0.0\lib\x86;C:\Users\Matthew\Desktop\MainLibs\SDL2-2.0.3\lib\x86;C:\Users\Matthew\Desktop\MainLibs\SDL2_image-2.0.0\lib\x86;C:\Users\Matthew\Desktop\MainLibs\glew-1.13.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\</OutDir>
     <IntDir>$(ProjectDir)\</IntDir>
   </PropertyGroup>
@@ -51,7 +51,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;SDL2_image.lib;glew32s.lib;glew32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;SDL2_image.lib;SDL2_mixer.lib;glew32s.lib;glew32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -69,31 +69,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\audio.c" />
     <ClCompile Include="..\src\body.c" />
     <ClCompile Include="..\src\collisions.c" />
     <ClCompile Include="..\src\entity.c" />
     <ClCompile Include="..\src\gametest3d.c" />
     <ClCompile Include="..\src\graphics3d.c" />
+    <ClCompile Include="..\src\level.c" />
     <ClCompile Include="..\src\mgl_callback.c" />
     <ClCompile Include="..\src\model.c" />
     <ClCompile Include="..\src\obj.c" />
     <ClCompile Include="..\src\shader.c" />
     <ClCompile Include="..\src\simple_logger.c" />
     <ClCompile Include="..\src\sprite.c" />
+    <ClCompile Include="..\src\text.c" />
     <ClCompile Include="..\src\vector.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\audio.h" />
     <ClInclude Include="..\src\body.h" />
     <ClInclude Include="..\src\collisions.h" />
     <ClInclude Include="..\src\entity.h" />
     <ClInclude Include="..\src\gametest3d.h" />
     <ClInclude Include="..\src\graphics3d.h" />
+    <ClInclude Include="..\src\level.h" />
     <ClInclude Include="..\src\mgl_callback.h" />
     <ClInclude Include="..\src\model.h" />
     <ClInclude Include="..\src\obj.h" />
     <ClInclude Include="..\src\shader.h" />
     <ClInclude Include="..\src\simple_logger.h" />
     <ClInclude Include="..\src\sprite.h" />
+    <ClInclude Include="..\src\text.h" />
     <ClInclude Include="..\src\vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
