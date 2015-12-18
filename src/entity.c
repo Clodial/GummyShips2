@@ -42,16 +42,19 @@ float worldFront = 50;
 float cSpeed = 0.01;
 int shields = 0;
 int powerLength = 0;
-int health = 0;
+int health = 3;
 Entity *player1;
 Entity *editUser;
 Sprite *shieldText;
 Sprite *temp;
 
 void mainInit(){
+	int i;
 	Obj *playModel;
 	Sprite *playSprite;
-
+	Entity *gameSpeed, *liveCount;
+	char liveSpr[] = "models/orange_piece.png";
+	char speedSpr[] = "models/green_piece.png";
 	entityClearList();
 	score = 0;
 	health = 3;
@@ -60,6 +63,10 @@ void mainInit(){
 	playModel = obj_load("models/cube.obj");
 	playSprite = LoadSprite("models/blue_piece.png",50,50);
 
+	gameSpeed = newSpeeder(vec3d(0, 1, 4), "speedHUD", LoadSprite(speedSpr, 1024, 1024));
+	for (i = 0; i < health; i++){
+		liveCount = newLiveC(vec3d(i - 3, 1, -4), "life", LoadSprite(liveSpr, 1024, 1024), health - i);
+	}
 	player1 = newPlayer(vec3d(0,-5,0), "player", playModel,LoadSprite("models/mountain_text.png",1024,1024), playSprite, 3);
 }
 
@@ -753,7 +760,7 @@ void stateThink(Entity *self){
 
 Entity *newMover(Vec3D position, const char *name, Sprite *spr){
 	Entity *editor;
-	slog("yo dawg");
+	
 	editor = entity_new();
 	if (editor == NULL) return;
 	editor->objModel = obj_load("models/cube.obj");
@@ -772,4 +779,52 @@ Entity *newMover(Vec3D position, const char *name, Sprite *spr){
 void moveThink(Entity *self){
 
 }
+
+Entity *newSpeeder(Vec3D position, const char *name, Sprite *spr){
+	Entity *gHud;
+
+	gHud = entity_new();
+	if (gHud == NULL) return;
+	gHud->objModel = obj_load("models/cube.obj");
+	gHud->texture = spr;
+	gHud->scale = vec3d(cSpeed, .1, .25);
+	gHud->rotation = vec3d(90, 90, 90);
+	vec3d_cpy(gHud->body.position, position);
+	cube_set(gHud->body.bounds, position.x, position.y, position.z, cSpeed, .1, .1);
+	gHud->think = hudThink;
+
+	return gHud;
+}
+void hudThink(Entity *self){
+
+	self->body.position.y += cSpeed;
+	self->scale = vec3d(.2, .01, cSpeed);
+
+}
+
+Entity *newLiveC(Vec3D position, const char *name, Sprite *spr, int state){
+	Entity *live;
+	live = entity_new();
+	if (live == NULL) return;
+	live->objModel = obj_load("models/cube.obj");
+	live->texture = spr;
+	live->scale = vec3d(.1, .1, .1);
+	live->rotation = vec3d(90, 90, 90);
+	vec3d_cpy(live->body.position, position);
+	cube_set(live->body.bounds, position.x, position.y, position.z, .1, .1,.1);
+	live->state = state;
+	live->think = liveThink;
+
+	return live;
+}
+void liveThink(Entity *self){
+
+	self->body.position.y += cSpeed;
+	if (health < self->state){
+		entity_free(self); //kill the counter if the # of lives < which one this was
+	}
+
+}
+
+
 /*eol@eof*/

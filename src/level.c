@@ -189,7 +189,6 @@ void loadLevel(char *fName){
 	FILE *fFile;
 
 	fFile = fopen(fName, "r");
-	slog("%s", fName);
 	if (fFile != NULL){
 		while (fgets(line, 256, fFile)){
 			sscanf(line, "%i", &ch);
@@ -209,7 +208,6 @@ void loadLevel(char *fName){
 						lvlSect[j][i] = 3;
 						break;
 				}
-				slog("%i", lvlSect[j][i]);
 				if (i < 4){
 					i++;
 				}
@@ -304,7 +302,6 @@ void createLvlEdit(){
 
 	//m = 0;
 	fFile = fopen(fLoc, "r");
-	slog("%s", fLoc);
 	if (fFile != NULL){
 		while (fgets(line, 256, fFile)){
 			sscanf(line, "%i", &ch);
