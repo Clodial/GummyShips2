@@ -25,17 +25,43 @@ Gummy Ships is a space Infinite-runner like game where you control 1 cube trying
       : Destroys all bullet, ship, and wall-like entities on the screen
     - Inverter
       : Reverses the player's controls
-  - Player Action Commands
-    - z (Invincibility)
-      : For a set amount of time (not shown graphically), so long as key is held, player can't be damaged. Letting go of the key resets the ability to use it until the skill is loaded back up.
-    - c (Speed Up)
-      : For a set amount of time (not shown graphically), so long as key is held, player moves a lot faster. Letting go of the key resets the ability's timer to zero and reverts the speed back to nothing.
+
+Settings and HUD items
+- Sequence Editor
+      : Allows you to edit the different patterns that randomly come at the player
+- HUD
+  - Top Bar: The current speed of the game
+  - Orange Boxes at the bottom: Player lives
+
+things to note:
+  There is a scoring system:
+    It's based on what entities you add to each file in the sequence editor
+      black-> 0pts
+      red -> 200pts
+      yellow -> 50pts
+      green -> -20pts
+    Scoring works that, once a sequence fully passes you, you gain points.
+    
+    Currently, the game does hold on to your high scores, which are displayed once the game starts
+  
+
 
 
 Controls:
 
+  Game Mode:
   WASD -> Movement
-  Z(hold) -> Invincibility
-  C(hold) -> Speed Up
+  E -> go to Sequence Editor Mode 
+  P -> Pause game
+  
+  Sequence Editor Mode (*default):
+  WASD -> Movement around editor
+  Z -> changes the current node's type
+    red     -> random moving blocks that can end your game
+    yellow  -> stationary ships that can shoot at the player
+    green   -> powerups
+    black   -> nothing
+  Q -> Switches the game to Game Mode
+  1, 2, 3, 4, 5 -> Cycles to that sequence for editing
   
 Compiled using Visual Studio C++ 2010
